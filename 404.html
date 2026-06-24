@@ -1,821 +1,543 @@
-
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Developer Command Center + Spotify</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Grid Command Matrix v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    animation: { 'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
                 }
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            transition: background-color 0.3s, color 0.3s;
-            padding-bottom: 140px; /* space for spotify footer */
-        }
-        .glass {
-            background: rgba(255, 255, 255, 0.45);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-        }
-        .dark .glass {
-            background: rgba(15, 23, 42, 0.45);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .shake {
-            animation: shake 0.4s ease-in-out;
-        }
-        @keyframes shake {
-            0%,
-            100% {
-                transform: translateX(0);
-            }
-            20%,
-            60% {
-                transform: translateX(-6px);
-            }
-            40%,
-            80% {
-                transform: translateX(6px);
-            }
-        }
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        /* Spotify footer styles */
-        #spotify-footer {
-            transition: all 0.3s;
-        }
-        #spotify-footer .player-controls button {
-            transition: all 0.2s;
-        }
-        #spotify-footer .player-controls button:hover {
-            transform: scale(1.1);
-        }
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        .glass { background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .dark .glass { background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.04); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen dynamic-bg overflow-x-hidden">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden pb-8">
 
-    <!-- AUTH WALL -->
-    <div id="auth-wall" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md transition-opacity duration-500">
-        <div id="auth-card" class="glass p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border mx-4">
+    <div id="auth-wall" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md transition-opacity duration-500">
+        <div id="auth-card" class="glass p-8 rounded-2xl shadow-2xl max-w-md w-full text-center mx-4">
             <div class="inline-flex p-4 bg-indigo-500/10 rounded-full text-indigo-500 mb-4">
-                <i data-lucide="terminal" class="w-8 h-8"></i>
+                <i data-lucide="shield-alert" class="w-8 h-8"></i>
             </div>
-            <h1 class="text-2xl font-bold tracking-tight mb-2">Command Center Locked</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Provide access token key to initialize local environment</p>
+            <h1 class="text-2xl font-bold tracking-tight mb-2">Initialize Session</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Enter system verification token</p>
             <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
-                <input type="password" id="password-input" placeholder="Enter configuration key..." class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50 text-center tracking-wider outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-xl shadow-lg shadow-indigo-600/20 transition-all">Authenticate Session</button>
+                <input type="password" id="password-input" placeholder="Verification token..." class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 text-center tracking-wider outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-xl transition-all shadow-lg shadow-indigo-600/20">Authenticate</button>
             </form>
         </div>
     </div>
 
-    <!-- MAIN APP -->
-    <div id="app-content" class="opacity-0 transition-opacity duration-700 max-w-[1600px] mx-auto p-4 lg:p-6 space-y-6">
-
-        <header class="glass rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
+    <div id="app-content" class="opacity-0 transition-opacity duration-700 max-w-[1800px] mx-auto p-4 lg:p-6 space-y-6">
+        
+        <header class="glass rounded-2xl p-4 flex flex-col lg:flex-row gap-4 items-center justify-between shadow-sm">
             <div class="flex items-center gap-3">
-                <div class="p-2 bg-indigo-600 rounded-xl text-white">
-                    <i data-lucide="cpu" class="w-6 h-6"></i>
+                <div class="p-2.5 bg-indigo-600 rounded-xl text-white">
+                    <i data-lucide="layout-grid" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg tracking-tight">DEV_OS // Command</h1>
-                    <p class="text-xs text-slate-500 dark:text-slate-400" id="live-clock">Loading system metrics...</p>
+                    <h1 class="font-bold text-lg tracking-tight">GRID_COMMAND_CENTER v2</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-mono" id="live-clock">Syncing terminal metrics...</p>
                 </div>
             </div>
 
-            <div class="relative w-full md:max-w-md">
-                <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4"></i>
-                <input type="text" id="global-search" placeholder="Global search shortcuts (Alt + F)..." class="w-full pl-10 pr-4 py-2 text-sm bg-white/40 dark:bg-slate-900/40 border border-slate-300 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all" oninput="executeGlobalSearch()" />
+            <div class="flex items-center gap-1 bg-white/20 dark:bg-slate-900/40 p-1 rounded-xl border border-slate-200/50 dark:border-slate-800/50 overflow-x-auto hide-scrollbar">
+                <button onclick="switchActiveGridDay('Mon')" id="tab-Mon" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">MON</button>
+                <button onclick="switchActiveGridDay('Tue')" id="tab-Tue" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">TUE</button>
+                <button onclick="switchActiveGridDay('Wed')" id="tab-Wed" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">WED</button>
+                <button onclick="switchActiveGridDay('Thu')" id="tab-Thu" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">THU</button>
+                <button onclick="switchActiveGridDay('Fri')" id="tab-Fri" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">FRI</button>
+                <button onclick="switchActiveGridDay('Sat')" id="tab-Sat" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">SAT</button>
+                <button onclick="switchActiveGridDay('Sun')" id="tab-Sun" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">SUN</button>
             </div>
 
-            <div class="flex items-center gap-3 flex-wrap">
-                <div id="weather-display" class="text-xs bg-slate-200/50 dark:bg-slate-800/50 px-3 py-1.5 rounded-lg flex items-center gap-2 cursor-pointer" onclick="updateWeatherCity()">
-                    <i data-lucide="cloud-sun" class="w-4 h-4 text-sky-500"></i>
-                    <span id="weather-text">Set City</span>
+            <div class="flex items-center gap-4 flex-wrap">
+                <div class="bg-indigo-500/10 border border-indigo-500/20 px-3 py-1.5 rounded-xl flex items-center gap-2">
+                    <i data-lucide="zap" class="w-4 h-4 text-amber-400 fill-amber-400"></i>
+                    <span class="text-xs font-mono font-bold text-indigo-400" id="user-xp-display">XP: 0</span>
                 </div>
-                <button onclick="toggleTheme()" class="p-2 rounded-xl bg-white/60 dark:bg-slate-900/60 hover:scale-105 transition-transform">
-                    <i data-lucide="sun" class="hidden dark:block w-5 h-5 text-amber-400"></i>
-                    <i data-lucide="moon" class="block dark:hidden w-5 h-5 text-indigo-600"></i>
-                </button>
-                <button onclick="triggerDataBackup()" class="p-2 rounded-xl bg-white/60 dark:bg-slate-900/60 text-emerald-500 hover:scale-105 transition-transform" title="Backup System State">
-                    <i data-lucide="download" class="w-5 h-5"></i>
-                </button>
-                <button onclick="document.getElementById('import-file').click()" class="p-2 rounded-xl bg-white/60 dark:bg-slate-900/60 text-sky-500 hover:scale-105 transition-transform" title="Restore Data">
-                    <i data-lucide="upload" class="w-5 h-5"></i>
-                </button>
-                <input type="file" id="import-file" class="hidden" accept=".json" onchange="importSystemData(event)" />
-                <button onclick="invalidateSession()" class="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all">
-                    <i data-lucide="log-out" class="w-5 h-5"></i>
-                </button>
+                <button onclick="toggleAppTheme()" class="p-2.5 rounded-xl bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-amber-400"><i data-lucide="sun" class="w-4 h-4"></i></button>
+                <button onclick="invalidateAppSession()" class="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20"><i data-lucide="log-out" class="w-4 h-4"></i></button>
             </div>
         </header>
 
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="glass p-4 rounded-xl flex items-center justify-between">
-                <div>
-                    <span class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Day Cycle Progress</span>
-                    <h3 class="text-lg font-bold mt-1" id="day-progress-text">0%</h3>
-                </div>
-                <div class="w-24 bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div id="day-progress-bar" class="bg-indigo-600 h-full transition-all duration-1000" style="width: 0%"></div>
-                </div>
-            </div>
-            <div class="glass p-4 rounded-xl flex items-center justify-between">
-                <div>
-                    <span class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Task Completion</span>
-                    <h3 class="text-lg font-bold mt-1" id="task-progress-text">0%</h3>
-                </div>
-                <div class="w-24 bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div id="task-progress-bar" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
-                </div>
-            </div>
-            <div class="glass p-4 rounded-xl flex items-center justify-between">
-                <div>
-                    <span class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Focus Interval</span>
-                    <h3 class="text-lg font-mono font-bold mt-1" id="pomodoro-timer">25:00</h3>
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="glass p-4 rounded-xl flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-indigo-500/10 rounded-lg text-indigo-500"><i data-lucide="timer" class="w-5 h-5"></i></div>
+                    <div>
+                        <span class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Focus Interval</span>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-xl font-mono font-bold" id="pomo-clock-digits">25:00</h3>
+                            <button onclick="modifyPomoSpan()" class="text-slate-400 hover:text-indigo-500"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
+                        </div>
+                    </div>
                 </div>
                 <div class="flex gap-2">
-                    <button id="pomo-start-btn" onclick="togglePomodoro()" class="p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition-colors"><i data-lucide="play" class="w-4 h-4"></i></button>
-                    <button onclick="resetPomodoro()" class="p-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg hover:bg-slate-300 transition-colors"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+                    <button id="pomo-trigger-btn" onclick="togglePomoState()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs rounded-lg flex items-center gap-1.5 transition-colors"><i data-lucide="play" class="w-3.5 h-3.5"></i> START</button>
+                    <button onclick="resetPomoState()" class="p-2 bg-slate-200 dark:bg-slate-800 rounded-lg"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i></button>
+                </div>
+            </div>
+
+            <div class="glass p-4 rounded-xl flex flex-col justify-center gap-1.5">
+                <span class="text-[10px] text-slate-400 font-mono uppercase tracking-wider flex items-center gap-1"><i data-lucide="music" class="w-3 h-3 text-pink-500"></i> Ambient Audio Engine</span>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="toggleAmbientSound('rain')" id="sound-rain-btn" class="text-[11px] font-mono py-1 rounded bg-slate-200 dark:bg-slate-800 border border-transparent hover:border-slate-400">🌧️ Rain</button>
+                    <button onclick="toggleAmbientSound('drone')" id="sound-drone-btn" class="text-[11px] font-mono py-1 rounded bg-slate-200 dark:bg-slate-800 border border-transparent hover:border-slate-400">🛸 Drone</button>
+                    <button onclick="toggleAmbientSound('cafe')" id="sound-cafe-btn" class="text-[11px] font-mono py-1 rounded bg-slate-200 dark:bg-slate-800 border border-transparent hover:border-slate-400">☕ Cafe</button>
+                </div>
+            </div>
+
+            <div class="glass p-4 rounded-xl flex flex-col justify-center gap-1.5">
+                <span class="text-[10px] text-slate-400 font-mono uppercase tracking-wider flex items-center gap-1"><i data-lucide="award" class="w-3 h-3 text-emerald-500"></i> Daily Habit Anchors</span>
+                <div class="flex items-center gap-4 justify-around bg-white/10 dark:bg-slate-900/20 p-1.5 rounded-lg">
+                    <label class="flex items-center gap-1.5 text-xs font-mono cursor-pointer"><input type="checkbox" id="habit-hydrate" onchange="awardHabitXp('hydrate')" class="rounded text-emerald-500 focus:ring-0">💧 Hydrate</label>
+                    <label class="flex items-center gap-1.5 text-xs font-mono cursor-pointer"><input type="checkbox" id="habit-commit" onchange="awardHabitXp('commit')" class="rounded text-emerald-500 focus:ring-0">🚀 Commit</label>
+                    <label class="flex items-center gap-1.5 text-xs font-mono cursor-pointer"><input type="checkbox" id="habit-stretch" onchange="awardHabitXp('stretch')" class="rounded text-emerald-500 focus:ring-0">🧘 Stretch</label>
                 </div>
             </div>
         </section>
 
-        <div class="glass p-3 rounded-xl flex items-center gap-3 overflow-x-auto hide-scrollbar" id="quick-links-container"></div>
-
-        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
-
-            <section class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[550px]" id="widget-notes">
-                <div class="flex items-center justify-between">
-                    <h2 class="font-bold flex items-center gap-2"><i data-lucide="sticky-note" class="text-amber-500 w-5 h-5"></i> Terminal Notes</h2>
-                    <button onclick="popoutWidget('notes')" class="text-xs text-slate-400 hover:text-indigo-500 flex items-center gap-1"><i data-lucide="external-link" class="w-3.5 h-3.5"></i> Detach</button>
+        <main class="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
+            
+            <section class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[650px] xl:col-span-1">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                    <h2 class="font-bold text-xs tracking-wide uppercase font-mono flex items-center gap-2 text-slate-400"><i data-lucide="check-square" class="text-emerald-500 w-4 h-4"></i> Action Tasks</h2>
+                    <span id="todo-count" class="text-[10px] bg-slate-200 dark:bg-slate-800 font-mono px-2 py-0.5 rounded-md">0 Open</span>
                 </div>
                 <div class="flex gap-2">
-                    <textarea id="note-input" placeholder="Draft a persistent note... Use tags like #work #idea" class="w-full text-sm p-3 rounded-xl bg-white/50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 resize-none h-20 transition-all"></textarea>
-                    <button onclick="addNote()" class="bg-indigo-600 text-white px-3 rounded-xl hover:bg-indigo-500 transition-all"><i data-lucide="plus" class="w-5 h-5"></i></button>
+                    <input type="text" id="todo-entry" placeholder="Add sprint task item..." class="w-full text-xs px-3 py-2.5 rounded-xl bg-white/30 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 outline-none focus:ring-1 focus:ring-indigo-500">
+                    <button onclick="commitTodoRow()" class="bg-indigo-600 text-white px-3.5 rounded-xl hover:bg-indigo-500"><i data-lucide="plus" class="w-4 h-4"></i></button>
                 </div>
-                <div id="note-tags-filter" class="flex gap-1.5 flex-wrap py-1"></div>
-                <div id="notes-list" class="space-y-3 overflow-y-auto max-h-[350px] hide-scrollbar flex-1"></div>
+                <div id="todo-stack" class="space-y-2 overflow-y-auto max-h-[500px] hide-scrollbar flex-1"></div>
             </section>
 
-            <section class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[550px]" id="widget-calendar">
-                <div class="flex items-center justify-between">
-                    <h2 class="font-bold flex items-center gap-2"><i data-lucide="calendar" class="text-sky-500 w-5 h-5"></i> Lifecycle Logs</h2>
-                    <button onclick="popoutWidget('calendar')" class="text-xs text-slate-400 hover:text-indigo-500 flex items-center gap-1"><i data-lucide="external-link" class="w-3.5 h-3.5"></i> Detach</button>
+            <section class="xl:col-span-2 space-y-4">
+                <div class="flex items-center justify-between bg-white/10 dark:bg-slate-900/30 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
+                    <span class="text-xs font-mono font-bold tracking-wide uppercase flex items-center gap-2 text-indigo-500"><i data-lucide="grid" class="w-4 h-4"></i> Master Hour Pro Grid Matrix</span>
+                    <span class="text-[10px] text-slate-400 font-mono">Pulsing Real-Time Monitoring Array</span>
                 </div>
-                <div class="flex items-center justify-between bg-white/30 dark:bg-slate-900/30 p-2 rounded-xl">
-                    <button onclick="changeMonth(-1)" class="p-1 hover:bg-white/40 dark:hover:bg-slate-800/40 rounded-lg"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-                    <span id="calendar-month-year" class="text-sm font-semibold"></span>
-                    <button onclick="changeMonth(1)" class="p-1 hover:bg-white/40 dark:hover:bg-slate-800/40 rounded-lg"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-                </div>
-                <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400">
-                    <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
-                </div>
-                <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-center text-sm"></div>
-                <div class="border-t border-slate-300 dark:border-slate-800 pt-3 flex-1 flex flex-col gap-2">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400" id="selected-date-label">Events</h3>
-                        <button onclick="promptAddEvent()" class="text-xs text-indigo-500 font-semibold flex items-center gap-0.5"><i data-lucide="plus" class="w-3 h-3"></i> Add Event</button>
+                
+                <div id="master-hourly-grid-canvas" class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     </div>
-                    <div id="day-events-list" class="space-y-2 overflow-y-auto max-h-[140px] hide-scrollbar flex-1"></div>
-                </div>
             </section>
 
-            <section class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[550px]" id="widget-todos">
-                <div class="flex items-center justify-between">
-                    <h2 class="font-bold flex items-center gap-2"><i data-lucide="check-square" class="text-emerald-500 w-5 h-5"></i> Pipeline Tasks</h2>
-                    <button onclick="popoutWidget('todos')" class="text-xs text-slate-400 hover:text-indigo-500 flex items-center gap-1"><i data-lucide="external-link" class="w-3.5 h-3.5"></i> Detach</button>
+            <section class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[650px] xl:col-span-1">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                    <h2 class="font-bold text-xs tracking-wide uppercase font-mono flex items-center gap-2 text-slate-400"><i data-lucide="sticky-note" class="text-amber-500 w-4 h-4"></i> Scratch Logging</h2>
                 </div>
-                <div class="flex flex-col gap-2">
-                    <div class="flex gap-2">
-                        <input type="text" id="todo-input" placeholder="Add task... Use !high !medium !low" class="w-full text-sm px-3 py-2 rounded-xl bg-white/50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
-                        <button onclick="addTodo()" class="bg-indigo-600 text-white px-3 rounded-xl hover:bg-indigo-500 transition-all"><i data-lucide="plus" class="w-5 h-5"></i></button>
-                    </div>
+                <div class="flex gap-2">
+                    <textarea id="note-entry" placeholder="Log dynamic thoughts..." class="w-full text-xs p-3 rounded-xl bg-white/30 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 outline-none focus:ring-1 focus:ring-indigo-500 h-16 resize-none"></textarea>
+                    <button onclick="commitNoteRow()" class="bg-indigo-600 text-white px-4 rounded-xl hover:bg-indigo-500"><i data-lucide="plus" class="w-4 h-4"></i></button>
                 </div>
-                <p class="text-xs text-slate-400 font-medium" id="todo-remaining-count">0 tasks remaining</p>
-                <div id="todos-list" class="space-y-2 overflow-y-auto max-h-[350px] hide-scrollbar flex-1"></div>
-            </section>
-
-            <section class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[550px]" id="widget-snippets">
-                <div class="flex items-center justify-between">
-                    <h2 class="font-bold flex items-center gap-2"><i data-lucide="code" class="text-purple-500 w-5 h-5"></i> Code Snippets</h2>
-                    <button onclick="popoutWidget('snippets')" class="text-xs text-slate-400 hover:text-indigo-500 flex items-center gap-1"><i data-lucide="external-link" class="w-3.5 h-3.5"></i> Detach</button>
-                </div>
-                <div class="bg-white/30 dark:bg-slate-900/30 p-3 rounded-xl space-y-2 border border-slate-200 dark:border-slate-800">
-                    <input type="text" id="snippet-title" placeholder="Snippet Title" class="w-full text-xs px-2.5 py-1.5 rounded-lg bg-white/50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 outline-none" />
-                    <select id="snippet-lang" class="w-full text-xs px-2.5 py-1.5 rounded-lg bg-white/50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 outline-none">
-                        <option value="javascript">JavaScript</option>
-                        <option value="typescript">TypeScript</option>
-                        <option value="python">Python</option>
-                        <option value="rust">Rust</option>
-                        <option value="go">Go</option>
-                        <option value="html">HTML</option>
-                        <option value="css">CSS</option>
-                        <option value="sql">SQL</option>
-                        <option value="bash">Bash</option>
-                        <option value="json">JSON</option>
-                        <option value="yaml">YAML</option>
-                    </select>
-                    <textarea id="snippet-code" placeholder="Paste structural logic here..." class="w-full text-xs p-2 rounded-lg bg-white/50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 font-mono h-16 resize-none outline-none"></textarea>
-                    <button onclick="addSnippet()" class="w-full text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-1.5 rounded-lg transition-all">Add Block</button>
-                </div>
-                <div class="flex gap-2 items-center">
-                    <select id="snippet-filter-lang" onchange="renderSnippets()" class="w-full text-xs p-1.5 bg-transparent border border-slate-300 dark:border-slate-700 rounded-lg outline-none">
-                        <option value="all">All Ecosystems</option>
-                    </select>
-                </div>
-                <div id="snippets-list" class="space-y-3 overflow-y-auto max-h-[220px] hide-scrollbar flex-1"></div>
+                <div id="note-stack" class="space-y-3 overflow-y-auto max-h-[500px] hide-scrollbar flex-1"></div>
             </section>
         </main>
     </div>
 
-    <!-- SNACKBAR -->
-    <div id="snackbar-container" class="fixed bottom-32 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col gap-2 w-full max-w-sm px-4"></div>
-
-    <!-- AMBIENT TOGGLE (floating) -->
-    <div class="fixed bottom-24 right-5 z-40">
-        <button onclick="toggleAmbientPortal()" id="ambient-toggle" class="p-3 rounded-full bg-indigo-600 text-white shadow-xl hover:scale-110 transition-all flex items-center justify-center">
-            <i data-lucide="music" class="w-5 h-5"></i>
-        </button>
-        <div id="ambient-menu" class="hidden absolute bottom-14 right-0 glass p-3 rounded-xl shadow-xl w-40 flex flex-col gap-1.5 border">
-            <button onclick="playAmbientTrack('rain')" class="text-xs text-left p-1.5 rounded hover:bg-white/40 dark:hover:bg-slate-800/40 flex items-center justify-between"><span>Rain Sound</span><i data-lucide="cloud-rain" class="w-3.5 h-3.5"></i></button>
-            <button onclick="playAmbientTrack('ocean')" class="text-xs text-left p-1.5 rounded hover:bg-white/40 dark:hover:bg-slate-800/40 flex items-center justify-between"><span>Sea Ambient</span><i data-lucide="waves" class="w-3.5 h-3.5"></i></button>
-            <button onclick="playAmbientTrack('stop')" class="text-xs text-left p-1.5 rounded text-red-500 hover:bg-red-500/10 flex items-center justify-between font-semibold"><span>Mute Audio</span><i data-lucide="square" class="w-3.5 h-3.5"></i></button>
-        </div>
-    </div>
-    <audio id="ambient-player" loop crossorigin="anonymous"></audio>
-
-    <!-- SPOTIFY FOOTER -->
-    <footer id="spotify-footer" class="fixed bottom-0 left-0 right-0 glass border-t border-slate-200 dark:border-slate-800 p-3 z-30">
-        <div class="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center gap-3">
-
-            <!-- Left: Connect / Track Info -->
-            <div class="flex items-center gap-3 w-full md:w-1/3">
-                <div id="spotify-connect-area" class="flex items-center gap-2">
-                    <i data-lucide="spotify" class="text-green-500 w-5 h-5"></i>
-                    <button id="spotify-connect-btn" onclick="initiateSpotifyAuth()" class="text-xs font-medium bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded-full transition-all">Connect Spotify</button>
-                    <button id="spotify-disconnect-btn" onclick="disconnectSpotify()" class="text-xs text-slate-400 hover:text-red-400 hidden">Disconnect</button>
-                </div>
-                <div id="spotify-track-info" class="hidden flex items-center gap-2 truncate">
-                    <img id="spotify-album-art" src="" alt="album art" class="w-10 h-10 rounded-md" />
-                    <div class="truncate">
-                        <p id="spotify-track-name" class="text-sm font-semibold truncate"></p>
-                        <p id="spotify-artist-name" class="text-xs text-slate-400 truncate"></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Center: Controls -->
-            <div class="flex items-center gap-2 md:gap-4 player-controls">
-                <button id="spotify-shuffle" onclick="toggleShuffle()" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="shuffle" class="w-4 h-4"></i></button>
-                <button id="spotify-prev" onclick="skipTrack('previous')" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="skip-back" class="w-5 h-5"></i></button>
-                <button id="spotify-play-pause" onclick="togglePlayback()" class="bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-full p-2 hover:scale-105 transition-all shadow-md">
-                    <i data-lucide="play" class="w-5 h-5" id="spotify-play-icon"></i>
-                </button>
-                <button id="spotify-next" onclick="skipTrack('next')" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="skip-forward" class="w-5 h-5"></i></button>
-                <button id="spotify-repeat" onclick="toggleRepeat()" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="repeat" class="w-4 h-4"></i></button>
-            </div>
-
-            <!-- Right: Progress & Volume -->
-            <div class="flex items-center gap-3 w-full md:w-1/3">
-                <span id="spotify-current-time" class="text-xs text-slate-400 font-mono">0:00</span>
-                <input type="range" id="spotify-progress" min="0" max="100" value="0" class="w-full h-1 bg-slate-300 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer" />
-                <span id="spotify-duration" class="text-xs text-slate-400 font-mono">0:00</span>
-                <div class="flex items-center gap-1">
-                    <i data-lucide="volume-2" class="w-4 h-4 text-slate-400"></i>
-                    <input type="range" id="spotify-volume" min="0" max="100" value="50" class="w-16 h-1 bg-slate-300 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer" />
-                </div>
-            </div>
-        </div>
-    </footer>
-
     <script>
-        // ============================================================
-        //  CONFIGURATION
-        // ============================================================
-        const APP_PASSWORD = "void"; // change your master key here
+        const MASTER_AUTH_TOKEN = "void";
 
-        // ---------- SPOTIFY CONFIG ----------
-        const SPOTIFY_CLIENT_ID = 'aed1ba72ae1947a1aa27395cfc7ea5c6'; // <<-- REPLACE WITH YOUR CLIENT ID
-        const SPOTIFY_REDIRECT_URI = 'https://thegreatsnowyfox-creator.github.io/private-web/callback';
-        const SPOTIFY_SCOPES = [
-            'streaming',
-            'user-read-email',
-            'user-read-private',
-            'user-read-playback-state',
-            'user-modify-playback-state',
-            'user-read-currently-playing'
-        ].join(' ');
-
-        // ============================================================
-        //  GLOBAL DATA STORE
-        // ============================================================
-        let systemData = {
+        let dashboardData = {
             notes: [],
             todos: [],
-            calendarEvents: {},
-            snippets: [],
-            city: "London",
-            theme: "dark",
-            bookmarks: [
-                { name: "GitHub", url: "https://github.com" },
-                { name: "StackOverflow", url: "https://stackoverflow.com" },
-                { name: "ChatGPT", url: "https://chatgpt.com" }
-            ]
+            selectedDay: "Mon",
+            themeMode: "dark",
+            userXp: 10,
+            habits: { hydrate: false, commit: false, stretch: false },
+            weeklyGridMatrix: {
+                "Mon": {}, "Tue": {}, "Wed": {}, "Thu": {}, "Fri": {}, "Sat": {}, "Sun": {}
+            }
         };
 
-        let lastDeletedItem = null;
-        let globalSearchFilter = "";
-        let selectedNoteTagFilter = null;
-        let currentCalendarDate = new Date();
-        let activeCalendarDayStr = "";
-        let pomodoroTimerObj = null;
-        let pomodoroTimeLeft = 1500;
+        const timelineHoursList = [
+            "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", 
+            "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", 
+            "19:00", "20:00", "21:00", "22:00"
+        ];
 
-        // ============================================================
-        //  AUTHENTICATION
-        // ============================================================
+        let pomoTimerReference = null;
+        let pomoSessionDuration = 1500;
+        let pomoRemainingSeconds = 1500;
+        
+        // Synth context mapping audio generators
+        let audioCtxInstance = null;
+        let liveAudioNodes = {};
+
         function handleAuth(e) {
-            e.preventDefault();
-            const input = document.getElementById('password-input').value;
-            if (input === APP_PASSWORD) {
+            if(e) e.preventDefault();
+            if(document.getElementById('password-input').value === MASTER_AUTH_TOKEN) {
                 document.getElementById('auth-wall').classList.add('opacity-0', 'pointer-events-none');
                 document.getElementById('app-content').classList.remove('opacity-0');
-                localStorage.setItem('dev_os_authenticated', 'true');
-                initializeSystemData();
+                localStorage.setItem('grid_session_authenticated_v2', 'true');
+                initializeWorkspaceEngine();
             } else {
-                const card = document.getElementById('auth-card');
-                card.classList.add('shake');
-                setTimeout(() => card.classList.remove('shake'), 400);
+                document.getElementById('auth-card').classList.add('animate-bounce');
+                setTimeout(() => document.getElementById('auth-card').classList.remove('animate-bounce'), 500);
             }
         }
 
-        function invalidateSession() {
-            localStorage.removeItem('dev_os_authenticated');
+        function invalidateAppSession() {
+            localStorage.removeItem('grid_session_authenticated_v2');
             window.location.reload();
         }
 
-        // ============================================================
-        //  PERSISTENCE ENGINE
-        // ============================================================
-        function initializeSystemData() {
-            const raw = localStorage.getItem('dev_os_vault_data');
-            if (raw) {
-                try { systemData = JSON.parse(raw); } catch (e) { console.error("Corrupt data partition cleared."); }
+        function initializeWorkspaceEngine() {
+            const vault = localStorage.getItem('grid_vault_store_data_v2');
+            if(vault) {
+                try {
+                    let parsed = JSON.parse(vault);
+                    if(!parsed.weeklyGridMatrix) parsed.weeklyGridMatrix = dashboardData.weeklyGridMatrix;
+                    if(!parsed.userXp) parsed.userXp = 0;
+                    if(!parsed.habits) parsed.habits = { hydrate: false, commit: false, stretch: false };
+                    dashboardData = parsed;
+                } catch(e) { console.error("Re-syncing data signatures."); }
             }
-            applySystemTheme();
-            renderAllWidgets();
-            initRealtimeMetrics();
-            fetchSystemWeather();
-            setupCrossWindowSync();
-            // Spotify: check for OAuth callback and try to restore session
-            handleSpotifyCallback();
-            restoreSpotifySession();
+            
+            // Build default configurations for matrix tiles missing metadata signatures
+            Object.keys(dashboardData.weeklyGridMatrix).forEach(day => {
+                timelineHoursList.forEach(hr => {
+                    if(!dashboardData.weeklyGridMatrix[day][hr]) {
+                        dashboardData.weeklyGridMatrix[day][hr] = {
+                            title: "Open Workspace Slot",
+                            schedule: "No focus sprint mapped to this hour frame block yet.",
+                            image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80"
+                        };
+                    }
+                });
+            });
+
+            // Restore habits presentation checks
+            document.getElementById('habit-hydrate').checked = dashboardData.habits.hydrate || false;
+            document.getElementById('habit-commit').checked = dashboardData.habits.commit || false;
+            document.getElementById('habit-stretch').checked = dashboardData.habits.stretch || false;
+
+            applySyncThemeState();
+            syncRenderCanvas();
+            runLoopTickers();
         }
 
-        function saveSystemState() {
-            localStorage.setItem('dev_os_vault_data', JSON.stringify(systemData));
-            localStorage.setItem('dev_os_sync_broadcast', Date.now().toString());
-            renderAllWidgets();
+        function saveWorkspaceState() {
+            localStorage.setItem('grid_vault_store_data_v2', JSON.stringify(dashboardData));
+            syncRenderCanvas();
         }
 
-        function setupCrossWindowSync() {
-            window.addEventListener('storage', (e) => {
-                if (e.key === 'dev_os_sync_broadcast' || e.key === 'dev_os_vault_data') {
-                    const raw = localStorage.getItem('dev_os_vault_data');
-                    if (raw) { systemData = JSON.parse(raw);
-                        renderAllWidgets(); }
+        function incrementUserXpGain(amt) {
+            dashboardData.userXp += amt;
+            document.getElementById('user-xp-display').innerText = `XP: ${dashboardData.userXp}`;
+        }
+
+        function awardHabitXp(key) {
+            const el = document.getElementById(`habit-${key}`);
+            dashboardData.habits[key] = el.checked;
+            if(el.checked) incrementUserXpGain(15);
+            localStorage.setItem('grid_vault_store_data_v2', JSON.stringify(dashboardData));
+        }
+
+        function syncRenderCanvas() {
+            document.getElementById('user-xp-display').innerText = `XP: ${dashboardData.userXp}`;
+            renderTodoComponent();
+            renderNoteComponent();
+            renderMatrixGridBlocks();
+        }
+
+        // RE-ENGINEERED MAGNIFIED MATRIX CARD COMPONENT CONSTRUCTORS
+        function switchActiveGridDay(dayKey) {
+            dashboardData.selectedDay = dayKey;
+            saveWorkspaceState();
+        }
+
+        function changeBlockContentField(hr, metricKey) {
+            const currentDay = dashboardData.selectedDay || "Mon";
+            const currentObj = dashboardData.weeklyGridMatrix[currentDay][hr];
+            const promptedResult = prompt(`Update grid parameter values for [${metricKey.toUpperCase()}]:`, currentObj[metricKey]);
+            
+            if(promptedResult !== null) {
+                currentObj[metricKey] = promptedResult.trim() || (metricKey === 'image' ? "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80" : "Unallocated");
+                incrementUserXpGain(5);
+                saveWorkspaceState();
+            }
+        }
+
+        function renderMatrixGridBlocks() {
+            const canvas = document.getElementById('master-hourly-grid-canvas');
+            if(!canvas) return;
+
+            const targetDay = dashboardData.selectedDay || "Mon";
+            
+            ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(d => {
+                const btn = document.getElementById(`tab-${d}`);
+                if(btn) {
+                    btn.className = d === targetDay 
+                        ? "text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-sm"
+                        : "text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg text-slate-400 hover:bg-white/10 dark:hover:bg-slate-800/40";
                 }
             });
-        }
 
-        function renderAllWidgets() {
-            renderNotes();
-            renderCalendar();
-            renderTodos();
-            renderSnippets();
-            renderBookmarks();
-            updateTaskProgressMetric();
-        }
+            const currentTimestamp = new Date();
+            const paddedHourString = String(currentTimestamp.getHours()).padStart(2, '0') + ":00";
 
-        // ============================================================
-        //  EXISTING WIDGETS (Notes, Calendar, Todos, Snippets, etc.)
-        //  (All functions are kept as in original code – only minor modifications for spotify)
-        // ============================================================
-        // ... (full code from previous version, but we'll re-include for completeness)
-        // To keep the answer concise, we'll only show the core integration and note that the rest is identical.
-        // For the final answer, we'll include the complete script, but here we'll reference that we keep all previous functions.
-        // In practice, we will output the full script with all functions.
+            canvas.innerHTML = timelineHoursList.map(hr => {
+                const blockMeta = dashboardData.weeklyGridMatrix[targetDay][hr];
+                const isActiveRealtimeHour = paddedHourString === hr;
+                
+                // Extra-large styling footprint configuration properties
+                const dynamicFramePulseColor = isActiveRealtimeHour 
+                    ? "border-2 border-indigo-500 shadow-xl shadow-indigo-500/20 bg-indigo-500/5 ring-2 ring-indigo-500/30" 
+                    : "border border-slate-200/60 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/40";
 
-        // We'll now add Spotify-specific code below.
+                return `
+                    <div class="glass p-5 rounded-2xl flex flex-col justify-between transition-all relative overflow-hidden group min-h-[220px] shadow-md ${dynamicFramePulseColor}">
+                        
+                        <div class="flex items-center justify-between border-b border-slate-200/40 dark:border-slate-800/40 pb-2">
+                            <span class="text-xs font-mono bg-slate-200 dark:bg-slate-800 px-2.5 py-1 rounded-md font-bold text-slate-600 dark:text-slate-300 tracking-wider">${hr}</span>
+                            ${isActiveRealtimeHour ? `<span class="text-xs text-indigo-500 font-mono tracking-widest font-bold animate-pulse">● LIVE TIMELINE SLICE</span>` : ''}
+                        </div>
 
-        // ============================================================
-        //  SPOTIFY WEB PLAYBACK SDK + OAUTH PKCE
-        // ============================================================
-        let spotifyPlayer = null;
-        let spotifyAccessToken = null;
-        let spotifyRefreshToken = null;
-        let spotifyDeviceId = null;
-        let spotifyIsPlaying = false;
-        let spotifyCurrentTrack = null;
-        let spotifyProgressInterval = null;
+                        <div class="flex items-center gap-4 my-3 flex-1">
+                            <div class="relative group/img shrink-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm w-20 h-20">
+                                <img src="${blockMeta.image}" class="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-300" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80'">
+                                <button onclick="changeBlockContentField('${hr}', 'image')" class="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white" title="Modify Background Asset">
+                                    <i data-lucide="camera" class="w-4 h-4"></i>
+                                </button>
+                            </div>
 
-        // PKCE helpers
-        function generateRandomString(length) {
-            const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let text = '';
-            for (let i = 0; i < length; i++) {
-                text += possible.charAt(Math.floor(Math.random() * possible.length));
-            }
-            return text;
-        }
+                            <div class="space-y-1 truncate flex-1">
+                                <h4 onclick="changeBlockContentField('${hr}', 'title')" class="text-sm font-bold tracking-tight cursor-pointer hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors truncate" title="Modify block headline label">
+                                    ${blockMeta.title}
+                                </h4>
+                                <p onclick="changeBlockContentField('${hr}', 'schedule')" class="text-xs font-mono text-slate-400 dark:text-slate-500 leading-relaxed cursor-pointer hover:text-indigo-400 break-words whitespace-normal line-clamp-3" title="Modify content block schedule payload">
+                                    ${blockMeta.schedule}
+                                </p>
+                            </div>
+                        </div>
 
-        async function sha256(plain) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(plain);
-            const hash = await crypto.subtle.digest('SHA-256', data);
-            return btoa(String.fromCharCode(...new Uint8Array(hash)))
-                .replace(/\+/g, '-')
-                .replace(/\//g, '_')
-                .replace(/=+$/, '');
-        }
-
-        function initiateSpotifyAuth() {
-            const codeVerifier = generateRandomString(128);
-            const state = generateRandomString(16);
-            localStorage.setItem('spotify_code_verifier', codeVerifier);
-            localStorage.setItem('spotify_state', state);
-
-            sha256(codeVerifier).then(challenge => {
-                const authUrl = new URL('https://accounts.spotify.com/authorize');
-                authUrl.searchParams.append('client_id', SPOTIFY_CLIENT_ID);
-                authUrl.searchParams.append('response_type', 'code');
-                authUrl.searchParams.append('redirect_uri', SPOTIFY_REDIRECT_URI);
-                authUrl.searchParams.append('scope', SPOTIFY_SCOPES);
-                authUrl.searchParams.append('code_challenge_method', 'S256');
-                authUrl.searchParams.append('code_challenge', challenge);
-                authUrl.searchParams.append('state', state);
-                authUrl.searchParams.append('show_dialog', 'true');
-                window.location.href = authUrl.toString();
-            });
-        }
-
-        function handleSpotifyCallback() {
-            const params = new URLSearchParams(window.location.search);
-            const code = params.get('code');
-            const state = params.get('state');
-            const storedState = localStorage.getItem('spotify_state');
-
-            if (code && state && state === storedState) {
-                // Exchange code for tokens
-                const verifier = localStorage.getItem('spotify_code_verifier');
-                fetch('https://accounts.spotify.com/api/token', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: new URLSearchParams({
-                            client_id: SPOTIFY_CLIENT_ID,
-                            grant_type: 'authorization_code',
-                            code: code,
-                            redirect_uri: SPOTIFY_REDIRECT_URI,
-                            code_verifier: verifier,
-                        }),
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.access_token) {
-                            spotifyAccessToken = data.access_token;
-                            spotifyRefreshToken = data.refresh_token || null;
-                            // Store token in session (not localStorage for security)
-                            sessionStorage.setItem('spotify_token', data.access_token);
-                            if (data.refresh_token) {
-                                sessionStorage.setItem('spotify_refresh_token', data.refresh_token);
-                            }
-                            // Clean URL
-                            window.history.replaceState({}, document.title, window.location.pathname);
-                            // Initialize player
-                            initSpotifyPlayer();
-                            // Update UI
-                            updateSpotifyUI(true);
-                        }
-                    })
-                    .catch(console.error);
-            }
-        }
-
-        function restoreSpotifySession() {
-            const token = sessionStorage.getItem('spotify_token');
-            if (token) {
-                spotifyAccessToken = token;
-                // Check if token is still valid by calling me endpoint
-                fetch('https://api.spotify.com/v1/me', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    })
-                    .then(res => {
-                        if (res.ok) {
-                            initSpotifyPlayer();
-                            updateSpotifyUI(true);
-                        } else {
-                            // Token invalid, try refresh
-                            refreshSpotifyToken();
-                        }
-                    })
-                    .catch(() => {
-                        sessionStorage.removeItem('spotify_token');
-                        updateSpotifyUI(false);
-                    });
-            } else {
-                updateSpotifyUI(false);
-            }
-        }
-
-        function refreshSpotifyToken() {
-            const refresh = sessionStorage.getItem('spotify_refresh_token');
-            if (!refresh) return;
-            fetch('https://accounts.spotify.com/api/token', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({
-                        client_id: SPOTIFY_CLIENT_ID,
-                        grant_type: 'refresh_token',
-                        refresh_token: refresh,
-                    }),
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.access_token) {
-                        spotifyAccessToken = data.access_token;
-                        sessionStorage.setItem('spotify_token', data.access_token);
-                        initSpotifyPlayer();
-                        updateSpotifyUI(true);
-                    }
-                })
-                .catch(console.error);
-        }
-
-        function disconnectSpotify() {
-            if (spotifyPlayer) {
-                spotifyPlayer.disconnect();
-            }
-            spotifyAccessToken = null;
-            spotifyRefreshToken = null;
-            sessionStorage.removeItem('spotify_token');
-            sessionStorage.removeItem('spotify_refresh_token');
-            updateSpotifyUI(false);
-            clearInterval(spotifyProgressInterval);
-            document.getElementById('spotify-play-icon').setAttribute('data-lucide', 'play');
+                        <div class="flex items-center justify-between border-t border-slate-200/40 dark:border-slate-800/40 pt-2 text-[10px] text-slate-400 font-mono">
+                            <span class="italic text-slate-400/60">Matrix Segment ${hr}</span>
+                            <button onclick="changeBlockContentField('${hr}', 'title')" class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-indigo-500 font-medium hover:underline"><i data-lucide="edit-3" class="w-3 h-3"></i> Quick Edit</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
             lucide.createIcons();
         }
 
-        function initSpotifyPlayer() {
-            if (!spotifyAccessToken) return;
-            if (spotifyPlayer) {
-                spotifyPlayer.disconnect();
-                spotifyPlayer = null;
+        // SIDEBAR ACTION PIPELINE METHODS
+        function commitTodoRow() {
+            const el = document.getElementById('todo-entry');
+            if(!el.value.trim()) return;
+            dashboardData.todos.push({ id: Date.now(), task: el.value.trim(), checked: false });
+            el.value = "";
+            incrementUserXpGain(10);
+            saveWorkspaceState();
+        }
+
+        function toggleTodoCheck(id) {
+            const matchingItem = dashboardData.todos.find(t => t.id === id);
+            if(matchingItem) { 
+                matchingItem.checked = !matchingItem.checked; 
+                if(matchingItem.checked) incrementUserXpGain(20);
+                saveWorkspaceState(); 
             }
+        }
 
-            window.onSpotifyWebPlaybackSDKReady = () => {
-                const player = new Spotify.Player({
-                    name: 'Dev Command Center',
-                    getOAuthToken: cb => { cb(spotifyAccessToken); },
-                    volume: parseInt(document.getElementById('spotify-volume').value) / 100 || 0.5
-                });
+        function dropTodoItem(id) {
+            dashboardData.todos = dashboardData.todos.filter(t => t.id !== id);
+            saveWorkspaceState();
+        }
 
-                // Error handling
-                player.addListener('initialization_error', ({ message }) => { console.error(message); });
-                player.addListener('authentication_error', ({ message }) => {
-                    console.error(message);
-                    refreshSpotifyToken();
-                });
-                player.addListener('account_error', ({ message }) => { console.error(message); });
-                player.addListener('playback_error', ({ message }) => { console.error(message); });
+        function renderTodoComponent() {
+            const list = document.getElementById('todo-stack');
+            if(!list) return;
 
-                // Ready
-                player.addListener('ready', ({ device_id }) => {
-                    spotifyDeviceId = device_id;
-                    // Transfer playback to this device
-                    fetch('https://api.spotify.com/v1/me/player', {
-                            method: 'PUT',
-                            headers: {
-                                'Authorization': `Bearer ${spotifyAccessToken}`,
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ device_ids: [device_id], play: false })
-                        })
-                        .catch(console.error);
-                });
+            const openCount = dashboardData.todos.filter(t => !t.checked).length;
+            document.getElementById('todo-count').innerText = `${openCount} Open`;
 
-                // State changes
-                player.addListener('player_state_changed', (state) => {
-                    if (!state) return;
-                    const track = state.track_window.current_track;
-                    if (track) {
-                        spotifyCurrentTrack = track;
-                        document.getElementById('spotify-track-name').innerText = track.name;
-                        document.getElementById('spotify-artist-name').innerText = track.artists.map(a => a.name).join(', ');
-                        document.getElementById('spotify-album-art').src = track.album.images[0]?.url || '';
-                        document.getElementById('spotify-track-info').classList.remove('hidden');
-                        document.getElementById('spotify-connect-area').querySelector('#spotify-connect-btn').classList.add('hidden');
-                    }
-                    const isPlaying = !state.paused;
-                    spotifyIsPlaying = isPlaying;
-                    const icon = document.getElementById('spotify-play-icon');
-                    if (isPlaying) {
-                        icon.setAttribute('data-lucide', 'pause');
-                    } else {
-                        icon.setAttribute('data-lucide', 'play');
-                    }
-                    lucide.createIcons();
+            list.innerHTML = dashboardData.todos.map(t => `
+                <div class="flex items-center justify-between p-2.5 bg-white/20 dark:bg-slate-900/20 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
+                    <div class="flex items-center gap-2 truncate flex-1">
+                        <input type="checkbox" ${t.checked ? 'checked' : ''} onchange="toggleTodoCheck(${t.id})" class="rounded text-indigo-600 focus:ring-0 cursor-pointer h-3.5 w-3.5">
+                        <span class="text-xs font-mono truncate tracking-tight ${t.checked ? 'line-through text-slate-400 dark:text-slate-600' : ''}">${t.task}</span>
+                    </div>
+                    <button onclick="dropTodoItem(${t.id})" class="text-slate-400 hover:text-red-400 pl-1 transition-colors"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
 
-                    // Update progress
-                    if (state.position && state.duration) {
-                        document.getElementById('spotify-current-time').innerText = formatTime(state.position);
-                        document.getElementById('spotify-duration').innerText = formatTime(state.duration);
-                        document.getElementById('spotify-progress').max = state.duration;
-                        document.getElementById('spotify-progress').value = state.position;
-                    }
-                    // Update shuffle/repeat states (optional)
-                });
+        // SIDEBAR SCRATCHPAD METRIC CAPABILITIES
+        function commitNoteRow() {
+            const el = document.getElementById('note-entry');
+            if(!el.value.trim()) return;
+            dashboardData.notes.unshift({ id: Date.now(), text: el.value.trim(), stamp: new Date().toLocaleTimeString() });
+            el.value = "";
+            incrementUserXpGain(5);
+            saveWorkspaceState();
+        }
 
-                // Connect
-                player.connect().then(success => {
-                    if (success) {
-                        spotifyPlayer = player;
-                        updateSpotifyUI(true);
-                        // Start progress interval
-                        if (spotifyProgressInterval) clearInterval(spotifyProgressInterval);
-                        spotifyProgressInterval = setInterval(() => {
-                            if (spotifyIsPlaying) {
-                                const progress = document.getElementById('spotify-progress');
-                                progress.value = parseInt(progress.value) + 1000; // approximate
-                            }
-                        }, 1000);
-                    }
-                });
-            };
+        function dropNoteItem(id) {
+            dashboardData.notes = dashboardData.notes.filter(n => n.id !== id);
+            saveWorkspaceState();
+        }
 
-            // Load SDK if not already loaded
-            if (typeof Spotify === 'undefined') {
-                const script = document.createElement('script');
-                script.src = 'https://sdk.scdn.co/spotify-player.js';
-                document.head.appendChild(script);
+        function renderNoteComponent() {
+            const list = document.getElementById('note-stack');
+            if(!list) return;
+
+            list.innerHTML = dashboardData.notes.map(n => `
+                <div class="p-3 bg-white/20 dark:bg-slate-900/20 rounded-xl border border-slate-200/50 dark:border-slate-800/50 flex flex-col gap-1">
+                    <p class="text-xs leading-relaxed break-words whitespace-pre-wrap">${n.text}</p>
+                    <div class="flex items-center justify-between mt-1 pt-1 border-t border-slate-200/20 dark:border-slate-800/20">
+                        <span class="text-[9px] font-mono text-slate-400">${n.stamp}</span>
+                        <button onclick="dropNoteItem(${n.id})" class="text-slate-400 hover:text-red-400 transition-colors"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // CHROMIUM WEBAUDIO AMBIENT OSCILLATOR SOUND SYNTHESIZER
+        function toggleAmbientSound(type) {
+            if (!audioCtxInstance) { audioCtxInstance = new (window.AudioContext || window.webkitAudioContext)(); }
+            
+            const btn = document.getElementById(`sound-${type}-btn`);
+            
+            if (liveAudioNodes[type]) {
+                liveAudioNodes[type].stop();
+                delete liveAudioNodes[type];
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('bg-slate-200', 'dark:bg-slate-800');
             } else {
-                window.onSpotifyWebPlaybackSDKReady();
+                // Initialize custom procedural synth shapes to build rain / white noise generators inside the browser bounds
+                const bufferSize = 2 * audioCtxInstance.sampleRate;
+                const noiseBuffer = audioCtxInstance.createBuffer(1, bufferSize, audioCtxInstance.sampleRate);
+                const outputData = noiseBuffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    outputData[i] = Math.random() * 2 - 1;
+                }
+                
+                const noiseSourceNode = audioCtxInstance.createBufferSource();
+                noiseSourceNode.buffer = noiseBuffer;
+                noiseSourceNode.loop = true;
+                
+                const audioFilterNode = audioCtxInstance.createBiquadFilter();
+                
+                if (type === 'rain') {
+                    audioFilterNode.type = 'bandpass';
+                    audioFilterNode.frequency.value = 400;
+                } else if (type === 'drone') {
+                    audioFilterNode.type = 'lowpass';
+                    audioFilterNode.frequency.value = 80;
+                } else { // cafe background shape modeling
+                    audioFilterNode.type = 'peaking';
+                    audioFilterNode.frequency.value = 1200;
+                }
+                
+                const outputGainVolumeNode = audioCtxInstance.createGain();
+                outputGainVolumeNode.gain.value = 0.08; 
+                
+                noiseSourceNode.connect(audioFilterNode);
+                audioFilterNode.connect(outputGainVolumeNode);
+                outputGainVolumeNode.connect(audioCtxInstance.destination);
+                
+                noiseSourceNode.start();
+                liveAudioNodes[type] = noiseSourceNode;
+                
+                btn.classList.remove('bg-slate-200', 'dark:bg-slate-800');
+                btn.classList.add('bg-indigo-600', 'text-white');
             }
         }
 
-        function updateSpotifyUI(connected) {
-            const connectBtn = document.getElementById('spotify-connect-btn');
-            const disconnectBtn = document.getElementById('spotify-disconnect-btn');
-            const trackInfo = document.getElementById('spotify-track-info');
-            if (connected && spotifyAccessToken) {
-                connectBtn.classList.add('hidden');
-                disconnectBtn.classList.remove('hidden');
-                trackInfo.classList.remove('hidden');
-                document.querySelectorAll('#spotify-footer .player-controls button').forEach(b => b.disabled = false);
-                // Enable progress/volume
-                document.getElementById('spotify-progress').disabled = false;
-                document.getElementById('spotify-volume').disabled = false;
+        // POMODORO FOCUS LOGIC SPANS
+        function modifyPomoSpan() {
+            const targetMins = prompt("Specify active countdown cycle metric width (minutes):", Math.floor(pomoSessionDuration / 60));
+            if(targetMins && !isNaN(targetMins) && targetMins > 0) {
+                pomoSessionDuration = Math.floor(targetMins) * 60;
+                resetPomoState();
+            }
+        }
+
+        function togglePomoState() {
+            const btn = document.getElementById('pomo-trigger-btn');
+            if(pomoTimerReference) {
+                clearInterval(pomoTimerReference);
+                pomoTimerReference = null;
+                btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> RESUME';
             } else {
-                connectBtn.classList.remove('hidden');
-                disconnectBtn.classList.add('hidden');
-                trackInfo.classList.add('hidden');
-                document.querySelectorAll('#spotify-footer .player-controls button').forEach(b => b.disabled = true);
-                document.getElementById('spotify-progress').disabled = true;
-                document.getElementById('spotify-volume').disabled = false; // volume can still be set even if not connected? but keep enabled
+                pomoTimerReference = setInterval(() => {
+                    if(pomoRemainingSeconds <= 0) {
+                        clearInterval(pomoTimerReference);
+                        pomoTimerReference = null;
+                        btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> START';
+                        incrementUserXpGain(100); 
+                        alert("Focus block sequence finished successfully! +100 XP gained.");
+                        pomoRemainingSeconds = pomoSessionDuration;
+                    } else { pomoRemainingSeconds--; }
+                    syncPomoDisplayDigits();
+                }, 1000);
+                btn.innerHTML = '<i data-lucide="pause" class="w-3.5 h-3.5"></i> PAUSE';
             }
+            lucide.createIcons();
         }
 
-        // Playback controls
-        function togglePlayback() {
-            if (!spotifyPlayer) return;
-            if (spotifyIsPlaying) {
-                spotifyPlayer.pause();
-            } else {
-                spotifyPlayer.resume();
-            }
+        function resetPomoState() {
+            if(pomoTimerReference) { clearInterval(pomoTimerReference); pomoTimerReference = null; }
+            pomoRemainingSeconds = pomoSessionDuration;
+            document.getElementById('pomo-trigger-btn').innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> START';
+            syncPomoDisplayDigits();
+            lucide.createIcons();
         }
 
-        function skipTrack(direction) {
-            if (!spotifyPlayer) return;
-            if (direction === 'next') {
-                spotifyPlayer.nextTrack();
-            } else if (direction === 'previous') {
-                spotifyPlayer.previousTrack();
-            }
+        function syncPomoDisplayDigits() {
+            const m = Math.floor(pomoRemainingSeconds / 60);
+            const s = pomoRemainingSeconds % 60;
+            document.getElementById('pomo-clock-digits').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
         }
 
-        function toggleShuffle() {
-            // Implement using Web API
-            if (!spotifyAccessToken) return;
-            fetch('https://api.spotify.com/v1/me/player/shuffle', {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${spotifyAccessToken}` },
-                    body: JSON.stringify({ state: true }) // toggle logic could be extended
-                })
-                .catch(console.error);
+        // MASTER CONTROL SYSTEMS LOGS
+        function runLoopTickers() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('live-clock').innerText = `SYS_TIME // ${now.toLocaleTimeString()}`;
+            }, 1000);
+
+            // Dynamically refresh block highlights accurately every minute bounds change
+            setInterval(() => { renderMatrixGridBlocks(); }, 60000);
         }
 
-        function toggleRepeat() {
-            if (!spotifyAccessToken) return;
-            fetch('https://api.spotify.com/v1/me/player/repeat', {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${spotifyAccessToken}` },
-                    body: JSON.stringify({ state: 'context' }) // toggle context/off/track
-                })
-                .catch(console.error);
+        function toggleAppTheme() {
+            dashboardData.themeMode = dashboardData.themeMode === 'dark' ? 'light' : 'dark';
+            applySyncThemeState();
+            localStorage.setItem('grid_vault_store_data_v2', JSON.stringify(dashboardData));
         }
 
-        // Volume control
-        document.getElementById('spotify-volume').addEventListener('input', function(e) {
-            const vol = parseInt(e.target.value) / 100;
-            if (spotifyPlayer) {
-                spotifyPlayer.setVolume(vol);
-            }
-        });
-
-        // Progress seek
-        document.getElementById('spotify-progress').addEventListener('input', function(e) {
-            if (!spotifyPlayer) return;
-            const pos = parseInt(e.target.value);
-            spotifyPlayer.seek(pos);
-        });
-
-        function formatTime(ms) {
-            const sec = Math.floor(ms / 1000);
-            const min = Math.floor(sec / 60);
-            const remSec = sec % 60;
-            return `${min}:${String(remSec).padStart(2, '0')}`;
+        function applySyncThemeState() {
+            if(dashboardData.themeMode === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
         }
 
-        // ============================================================
-        //  EXISTING FUNCTIONS (abridged for brevity – but in final code we include them all)
-        // ============================================================
-        // We'll now include the missing functions from the original code:
-        // (addNote, deleteNote, updateNoteContent, renderNotes, toggleTagFilter,
-        //  renderCalendar, changeMonth, promptAddEvent, deleteCalendarEvent, selectCalendarDay,
-        //  addTodo, toggleTodoState, deleteTodo, renderTodos, updateTaskProgressMetric,
-        //  addSnippet, deleteSnippet, renderSnippets, copySnippetToClipboard,
-        //  escapeHtml, executeGlobalSearch, toggleTheme, applySystemTheme,
-        //  initRealtimeMetrics, fetchSystemWeather, updateWeatherCity,
-        //  togglePomodoro, resetPomodoro, updatePomodoroDisplay,
-        //  renderBookmarks, promptAddBookmark,
-        //  showUndoSnackbar, executeRestoreAction,
-        //  toggleAmbientPortal, playAmbientTrack,
-        //  triggerDataBackup, importSystemData,
-        //  popoutWidget)
-        // We'll place them inside the final code block.
-
-        // ... (all those functions go here – we will output the full complete script)
-        // Since the answer will be very long, we'll only show the full code in the final output.
-        // The rest of the functions are exactly as in the original provided code, with no changes.
-        // We'll just ensure they are included.
-
-        // ============================================================
-        //  FINAL INITIALIZATION
-        // ============================================================
-        window.onload = function() {
-            if (localStorage.getItem('dev_os_authenticated') === 'true') {
+        window.onload = () => {
+            if(localStorage.getItem('grid_session_authenticated_v2') === 'true') {
                 document.getElementById('auth-wall').classList.add('opacity-0', 'pointer-events-none');
                 document.getElementById('app-content').classList.remove('opacity-0');
-                initializeSystemData();
-            } else {
-                lucide.createIcons();
-            }
+                initializeWorkspaceEngine();
+            } else { lucide.createIcons(); }
         };
-
-        // Add missing functions here for the final code.
-        // (We'll include them in the output.)
-
-        // Note: For brevity in this answer, I've omitted the full listing of all
-        // existing functions (addNote, renderNotes, etc.) because they are unchanged.
-        // In the final code block, I will include everything.
-        // I'll now output the complete HTML with all functions intact plus Spotify additions.
     </script>
 </body>
 </html>
