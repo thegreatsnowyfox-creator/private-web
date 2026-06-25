@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detachable Focus Workspace</title>
+    <title>Floating Pop-Out Workspace</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -33,16 +33,19 @@
                 <i data-lucide="clock" class="w-5 h-5"></i>
             </div>
             <div>
-                <h1 class="font-bold tracking-tight text-sm">DETACHABLE_WORKSPACE</h1>
+                <h1 class="font-bold tracking-tight text-sm">POP_OUT_WORKSPACE</h1>
                 <p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono" id="live-clock">Syncing...</p>
             </div>
         </div>
         <button onclick="toggleAppTheme()" class="p-2 rounded-xl bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-amber-400"><i data-lucide="sun" class="w-4 h-4"></i></button>
     </header>
 
-    <main class="max-w-5xl mx-auto space-y-6">
+    <main class="max-w-5xl mx-auto space-y-6" id="workspace-main">
         
-        <section class="glass p-6 rounded-2xl flex flex-col items-center justify-center text-center shadow-md">
+        <section id="widget-timer" class="glass p-6 rounded-2xl flex flex-col items-center justify-center text-center shadow-md relative group">
+            <button onclick="popOutWidget('widget-timer', 'Focus Timer', 400, 300)" class="absolute top-4 right-4 p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 hover:text-indigo-500 transition-colors opacity-0 group-hover:opacity-100" title="Pop out into floating window">
+                <i data-lucide="external-link" class="w-4 h-4"></i>
+            </button>
             <div class="p-3 bg-indigo-500/10 rounded-full text-indigo-500 mb-2">
                 <i data-lucide="timer" class="w-8 h-8"></i>
             </div>
@@ -57,14 +60,17 @@
             </div>
         </section>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="drop-zone-container">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            <section id="widget-todo" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[400px] shadow-sm transition-all duration-200">
-                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 cursor-move group">
-                    <h2 class="font-bold text-xs tracking-wide uppercase font-mono flex items-center gap-2 text-slate-400 group-hover:text-indigo-400 transition-colors">
-                        <i data-lucide="grip-vertical" class="w-3.5 h-3.5 text-slate-500"></i> Tasks
+            <section id="widget-todo" class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[400px] shadow-sm relative group">
+                <button onclick="popOutWidget('widget-todo', 'Tasks', 450, 500)" class="absolute top-4 right-4 p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 hover:text-indigo-500 transition-colors opacity-0 group-hover:opacity-100" title="Pop out into floating window">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                </button>
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                    <h2 class="font-bold text-xs tracking-wide uppercase font-mono flex items-center gap-2 text-slate-400">
+                        <i data-lucide="check-square" class="text-emerald-500 w-4 h-4"></i> Tasks
                     </h2>
-                    <span id="todo-count" class="text-[10px] bg-slate-200 dark:bg-slate-800 font-mono px-2 py-0.5 rounded-md">0 Open</span>
+                    <span id="todo-count" class="text-[10px] bg-slate-200 dark:bg-slate-800 font-mono px-2 py-0.5 rounded-md mr-8">0 Open</span>
                 </div>
                 <div class="flex gap-2">
                     <input type="text" id="todo-entry" placeholder="Add task item..." class="w-full text-xs px-3 py-2 bg-white/30 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500">
@@ -73,10 +79,13 @@
                 <div id="todo-stack" class="space-y-2 overflow-y-auto max-h-[350px] hide-scrollbar flex-1"></div>
             </section>
 
-            <section id="widget-notes" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[400px] shadow-sm transition-all duration-200">
-                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 cursor-move group">
-                    <h2 class="font-bold text-xs tracking-wide uppercase font-mono flex items-center gap-2 text-slate-400 group-hover:text-indigo-400 transition-colors">
-                        <i data-lucide="grip-vertical" class="w-3.5 h-3.5 text-slate-500"></i> Scratchpad
+            <section id="widget-notes" class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[400px] shadow-sm relative group">
+                <button onclick="popOutWidget('widget-notes', 'Scratchpad', 450, 500)" class="absolute top-4 right-4 p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 hover:text-indigo-500 transition-colors opacity-0 group-hover:opacity-100" title="Pop out into floating window">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                </button>
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                    <h2 class="font-bold text-xs tracking-wide uppercase font-mono flex items-center gap-2 text-slate-400">
+                        <i data-lucide="sticky-note" class="text-amber-500 w-4 h-4"></i> Scratchpad
                     </h2>
                 </div>
                 <div class="flex flex-col gap-2">
@@ -99,7 +108,6 @@
         let pomoTimerReference = null;
         let pomoSessionDuration = 1500;
         let pomoRemainingSeconds = 1500;
-        let draggedElement = null;
 
         function initializeWorkspace() {
             const vault = localStorage.getItem('minimal_focus_vault');
@@ -124,40 +132,78 @@
             renderNoteComponent();
         }
 
-        // DRAG & DROP ENGINE
-        function handleDragStart(e) {
-            draggedElement = e.currentTarget;
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/html', draggedElement.innerHTML);
-            draggedElement.classList.add('opacity-50');
-        }
+        // DOCUMENT PICTURE-IN-PICTURE (POP OUT WINDOW API)
+        async function popOutWidget(widgetId, title, width, height) {
+            if ('documentPictureInPicture' in window) {
+                try {
+                    const widgetElement = document.getElementById(widgetId);
+                    
+                    // Request a true floating window overlay frame
+                    const pipWindow = await window.documentPictureInPicture.requestWindow({
+                        width: width,
+                        height: height,
+                    });
 
-        function handleDragOver(e) {
-            if (e.preventDefault) { e.preventDefault(); }
-            e.dataTransfer.dropEffect = 'move';
-            return false;
-        }
+                    // Copy all stylesheet headers over into the newly generated window context frame
+                    Array.from(document.styleSheets).forEach((styleSheet) => {
+                        try {
+                            if (styleSheet.cssRules) {
+                                const newStyleEl = pipWindow.document.createElement('style');
+                                Array.from(styleSheet.cssRules).forEach((rule) => {
+                                    newStyleEl.appendChild(pipWindow.document.createTextNode(rule.cssText));
+                                });
+                                pipWindow.document.head.appendChild(newStyleEl);
+                            } else if (styleSheet.href) {
+                                const newLinkEl = pipWindow.document.createElement('link');
+                                newLinkEl.rel = 'stylesheet';
+                                newLinkEl.href = styleSheet.href;
+                                pipWindow.document.head.appendChild(newLinkEl);
+                            }
+                        } catch (e) {
+                            // Workaround to copy tailwind asset links
+                            if (styleSheet.href) {
+                                const link = pipWindow.document.createElement('link');
+                                link.rel = 'stylesheet';
+                                link.href = styleSheet.href;
+                                pipWindow.document.head.appendChild(link);
+                            }
+                        }
+                    });
 
-        function handleDrop(e) {
-            e.stopPropagation();
-            e.preventDefault();
-            
-            let targetElement = e.currentTarget;
-            if (draggedElement !== targetElement) {
-                // Swap layout positions inside the DOM container node
-                const container = document.getElementById('drop-zone-container');
-                const children = Array.from(container.children);
-                const draggedIndex = children.indexOf(draggedElement);
-                const targetIndex = children.indexOf(targetElement);
+                    // Set up container wrapper rules
+                    pipWindow.document.body.className = document.body.className + " p-4 flex flex-col justify-stretch items-stretch h-full";
+                    pipWindow.document.title = title;
 
-                if (draggedIndex < targetIndex) {
-                    container.insertBefore(targetElement, draggedElement);
-                } else {
-                    container.insertBefore(draggedElement, targetElement);
+                    // Move the widget element into the detached window frame structure
+                    const placeholder = document.createElement('div');
+                    placeholder.id = `${widgetId}-placeholder`;
+                    placeholder.className = "p-6 border border-dashed border-slate-700 text-center text-xs text-slate-500 rounded-2xl font-mono";
+                    placeholder.innerText = `[ ${title.toUpperCase()} ELEMENT FLOATING IN POP-OUT WINDOW ]`;
+                    
+                    widgetElement.parentNode.insertBefore(placeholder, widgetElement);
+                    pipWindow.document.body.appendChild(widgetElement);
+
+                    // Remove the pop-out launch action trigger icon inside the detached frame context window view
+                    const popBtn = widgetElement.querySelector('button[onclick^="popOutWidget"]');
+                    if (popBtn) popBtn.style.display = 'none';
+
+                    // Re-inject the layout logic back into the core page whenever the popup gets dismissed/closed
+                    pipWindow.addEventListener("pagehide", (event) => {
+                        const originalPlaceholder = document.getElementById(`${widgetId}-placeholder`);
+                        if (originalPlaceholder) {
+                            originalPlaceholder.parentNode.insertBefore(widgetElement, originalPlaceholder);
+                            originalPlaceholder.remove();
+                        }
+                        if (popBtn) popBtn.style.display = '';
+                    });
+
+                } catch (error) {
+                    alert("Pop-out initialization blocked. Make sure to allow user gestures.");
+                    console.error(error);
                 }
+            } else {
+                alert("Your current browser version doesn't support Document Picture-in-Picture mode popouts. Try using standard Chromium channels like Chrome or Edge.");
             }
-            draggedElement.classList.remove('opacity-50');
-            return false;
         }
 
         // TO-DO PIPELINE METHODS
