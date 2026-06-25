@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Floating Pop-Out Workspace</title>
+    <title>Floating Pop-Out Workspace v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -108,6 +108,7 @@
         let pomoTimerReference = null;
         let pomoSessionDuration = 1500;
         let pomoRemainingSeconds = 1500;
+        let runningPipWindows = {};
 
         function initializeWorkspace() {
             const vault = localStorage.getItem('minimal_focus_vault');
@@ -130,37 +131,46 @@
         function syncRenderCanvas() {
             renderTodoComponent();
             renderNoteComponent();
+            
+            // Loop through active pop-out windows to make sure they get updated elements
+            Object.keys(runningPipWindows).forEach(id => {
+                if (runningPipWindows[id] && runningPipWindows[id].document) {
+                    // Re-initialize Lucide Icons in child windows
+                    if (runningPipWindows[id].lucide) {
+                        runningPipWindows[id].lucide.createIcons();
+                    }
+                }
+            });
         }
 
-        // DOCUMENT PICTURE-IN-PICTURE (POP OUT WINDOW API)
+        // FIXED DOCUMENT PICTURE-IN-PICTURE (SYNCED INTERACTIONS & STYLES)
         async function popOutWidget(widgetId, title, width, height) {
             if ('documentPictureInPicture' in window) {
                 try {
                     const widgetElement = document.getElementById(widgetId);
-                    
-                    // Request a true floating window overlay frame
                     const pipWindow = await window.documentPictureInPicture.requestWindow({
                         width: width,
                         height: height,
                     });
 
-                    // Copy all stylesheet headers over into the newly generated window context frame
+                    runningPipWindows[widgetId] = pipWindow;
+
+                    // FIXED COLOR/BACKGROUND: Explicitly add dark configuration classes to pop-out context
+                    pipWindow.document.documentElement.className = document.documentElement.className;
+                    pipWindow.document.body.className = "bg-slate-950 text-slate-100 p-4 flex flex-col justify-stretch items-stretch h-full overflow-hidden";
+                    pipWindow.document.title = title;
+
+                    // Copy tailwind configurations and styles properly
                     Array.from(document.styleSheets).forEach((styleSheet) => {
                         try {
+                            const newStyleEl = pipWindow.document.createElement('style');
                             if (styleSheet.cssRules) {
-                                const newStyleEl = pipWindow.document.createElement('style');
                                 Array.from(styleSheet.cssRules).forEach((rule) => {
                                     newStyleEl.appendChild(pipWindow.document.createTextNode(rule.cssText));
                                 });
                                 pipWindow.document.head.appendChild(newStyleEl);
-                            } else if (styleSheet.href) {
-                                const newLinkEl = pipWindow.document.createElement('link');
-                                newLinkEl.rel = 'stylesheet';
-                                newLinkEl.href = styleSheet.href;
-                                pipWindow.document.head.appendChild(newLinkEl);
                             }
                         } catch (e) {
-                            // Workaround to copy tailwind asset links
                             if (styleSheet.href) {
                                 const link = pipWindow.document.createElement('link');
                                 link.rel = 'stylesheet';
@@ -170,48 +180,63 @@
                         }
                     });
 
-                    // Set up container wrapper rules
-                    pipWindow.document.body.className = document.body.className + " p-4 flex flex-col justify-stretch items-stretch h-full";
-                    pipWindow.document.title = title;
+                    // Move global icon libraries over to make functional icons work inside popout context
+                    const script = pipWindow.document.createElement('script');
+                    script.src = "https://unpkg.com/lucide@latest";
+                    script.onload = () => { pipWindow.lucide = pipWindow.window.lucide; pipWindow.lucide.createIcons(); };
+                    pipWindow.document.head.appendChild(script);
 
-                    // Move the widget element into the detached window frame structure
+                    // Placeholder setup inside core layout container
                     const placeholder = document.createElement('div');
                     placeholder.id = `${widgetId}-placeholder`;
-                    placeholder.className = "p-6 border border-dashed border-slate-700 text-center text-xs text-slate-500 rounded-2xl font-mono";
-                    placeholder.innerText = `[ ${title.toUpperCase()} ELEMENT FLOATING IN POP-OUT WINDOW ]`;
+                    placeholder.className = "p-6 border border-dashed border-slate-800 text-center text-xs text-slate-500 rounded-2xl font-mono flex items-center justify-center min-h-[400px]";
+                    placeholder.innerText = `[ ${title.toUpperCase()} FLOATING ]`;
                     
                     widgetElement.parentNode.insertBefore(placeholder, widgetElement);
                     pipWindow.document.body.appendChild(widgetElement);
 
-                    // Remove the pop-out launch action trigger icon inside the detached frame context window view
+                    // Hide original expand toggle icon when popped out
                     const popBtn = widgetElement.querySelector('button[onclick^="popOutWidget"]');
                     if (popBtn) popBtn.style.display = 'none';
 
-                    // Re-inject the layout logic back into the core page whenever the popup gets dismissed/closed
+                    // Re-bind click event scopes directly back to main tab windows execution loop
+                    pipWindow.window.commitTodoRow = window.commitTodoRow;
+                    pipWindow.window.toggleTodoCheck = window.toggleTodoCheck;
+                    pipWindow.window.dropTodoItem = window.dropTodoItem;
+                    pipWindow.window.commitNoteRow = window.commitNoteRow;
+                    pipWindow.window.dropNoteItem = window.dropNoteItem;
+                    pipWindow.window.togglePomoState = window.togglePomoState;
+                    pipWindow.window.resetPomoState = window.resetPomoState;
+                    pipWindow.window.modifyPomoSpan = window.modifyPomoSpan;
+
+                    // Reattach element to master board when popped window closes
                     pipWindow.addEventListener("pagehide", (event) => {
+                        delete runningPipWindows[widgetId];
                         const originalPlaceholder = document.getElementById(`${widgetId}-placeholder`);
                         if (originalPlaceholder) {
                             originalPlaceholder.parentNode.insertBefore(widgetElement, originalPlaceholder);
                             originalPlaceholder.remove();
                         }
                         if (popBtn) popBtn.style.display = '';
+                        lucide.createIcons();
                     });
 
                 } catch (error) {
-                    alert("Pop-out initialization blocked. Make sure to allow user gestures.");
+                    alert("Pop-out block sequence registered.");
                     console.error(error);
                 }
             } else {
-                alert("Your current browser version doesn't support Document Picture-in-Picture mode popouts. Try using standard Chromium channels like Chrome or Edge.");
+                alert("Your browser does not support true desktop Document Picture-in-Picture window modifications.");
             }
         }
 
         // TO-DO PIPELINE METHODS
         function commitTodoRow() {
-            const el = document.getElementById('todo-entry');
-            if(!el.value.trim()) return;
-            appState.todos.push({ id: Date.now(), task: el.value.trim(), checked: false });
-            el.value = "";
+            // Read value dynamically across windows
+            const inputEl = document.querySelector('#todo-entry') || (runningPipWindows['widget-todo'] && runningPipWindows['widget-todo'].document.querySelector('#todo-entry'));
+            if(!inputEl || !inputEl.value.trim()) return;
+            appState.todos.push({ id: Date.now(), task: inputEl.value.trim(), checked: false });
+            inputEl.value = "";
             saveWorkspaceState();
         }
 
@@ -226,30 +251,31 @@
         }
 
         function renderTodoComponent() {
-            const list = document.getElementById('todo-stack');
-            if(!list) return;
-
+            const listElements = document.querySelectorAll('#todo-stack');
             const openCount = appState.todos.filter(t => !t.checked).length;
-            document.getElementById('todo-count').innerText = `${openCount} Open`;
+            
+            document.querySelectorAll('#todo-count').forEach(el => el.innerText = `${openCount} Open`);
 
-            list.innerHTML = appState.todos.map(t => `
-                <div class="flex items-center justify-between p-2.5 bg-white/20 dark:bg-slate-900/20 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
-                    <div class="flex items-center gap-2 truncate flex-1">
-                        <input type="checkbox" ${t.checked ? 'checked' : ''} onchange="toggleTodoCheck(${t.id})" class="rounded text-indigo-600 focus:ring-0 cursor-pointer h-3.5 w-3.5">
-                        <span class="text-xs font-mono truncate tracking-tight ${t.checked ? 'line-through text-slate-400 dark:text-slate-600' : ''}">${t.task}</span>
+            listElements.forEach(list => {
+                list.innerHTML = appState.todos.map(t => `
+                    <div class="flex items-center justify-between p-2.5 bg-slate-900/60 rounded-xl border border-slate-800">
+                        <div class="flex items-center gap-2 truncate flex-1">
+                            <input type="checkbox" ${t.checked ? 'checked' : ''} onchange="window.toggleTodoCheck(${t.id})" class="rounded text-indigo-600 focus:ring-0 cursor-pointer h-3.5 w-3.5">
+                            <span class="text-xs font-mono truncate tracking-tight ${t.checked ? 'line-through text-slate-500' : ''}">${t.task}</span>
+                        </div>
+                        <button onclick="window.dropTodoItem(${t.id})" class="text-slate-500 hover:text-red-400 pl-1 transition-colors"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
                     </div>
-                    <button onclick="dropTodoItem(${t.id})" class="text-slate-400 hover:text-red-400 pl-1 transition-colors"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
-                </div>
-            `).join('');
+                `).join('');
+            });
             lucide.createIcons();
         }
 
         // NOTES ENGINE METHODS
         function commitNoteRow() {
-            const el = document.getElementById('note-entry');
-            if(!el.value.trim()) return;
-            appState.notes.unshift({ id: Date.now(), text: el.value.trim(), stamp: new Date().toLocaleTimeString() });
-            el.value = "";
+            const textEl = document.querySelector('#note-entry') || (runningPipWindows['widget-notes'] && runningPipWindows['widget-notes'].document.querySelector('#note-entry'));
+            if(!textEl || !textEl.value.trim()) return;
+            appState.notes.unshift({ id: Date.now(), text: textEl.value.trim(), stamp: new Date().toLocaleTimeString() });
+            textEl.value = "";
             saveWorkspaceState();
         }
 
@@ -259,18 +285,19 @@
         }
 
         function renderNoteComponent() {
-            const list = document.getElementById('note-stack');
-            if(!list) return;
-
-            list.innerHTML = appState.notes.map(n => `
-                <div class="p-3 bg-white/20 dark:bg-slate-900/20 rounded-xl border border-slate-200/50 dark:border-slate-800/50 flex flex-col gap-1">
-                    <p class="text-xs leading-relaxed break-words whitespace-pre-wrap">${n.text}</p>
-                    <div class="flex items-center justify-between mt-1 pt-1 border-t border-slate-200/20 dark:border-slate-800/20">
-                        <span class="text-[9px] font-mono text-slate-400">${n.stamp}</span>
-                        <button onclick="dropNoteItem(${n.id})" class="text-slate-400 hover:text-red-400 transition-colors"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+            const listElements = document.querySelectorAll('#note-stack');
+            
+            listElements.forEach(list => {
+                list.innerHTML = appState.notes.map(n => `
+                    <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 flex flex-col gap-1">
+                        <p class="text-xs leading-relaxed break-words whitespace-pre-wrap">${n.text}</p>
+                        <div class="flex items-center justify-between mt-1 pt-1 border-t border-slate-800/40">
+                            <span class="text-[9px] font-mono text-slate-500">${n.stamp}</span>
+                            <button onclick="window.dropNoteItem(${n.id})" class="text-slate-500 hover:text-red-400 transition-colors"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            });
             lucide.createIcons();
         }
 
@@ -284,39 +311,43 @@
         }
 
         function togglePomoState() {
-            const btn = document.getElementById('pomo-trigger-btn');
+            const triggerButtons = document.querySelectorAll('#pomo-trigger-btn');
             if(pomoTimerReference) {
                 clearInterval(pomoTimerReference);
                 pomoTimerReference = null;
-                btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> RESUME';
+                triggerButtons.forEach(btn => btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> RESUME');
             } else {
                 pomoTimerReference = setInterval(() => {
                     if(pomoRemainingSeconds <= 0) {
                         clearInterval(pomoTimerReference);
                         pomoTimerReference = null;
-                        btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> START';
+                        triggerButtons.forEach(btn => btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> START');
                         alert("Session complete!");
                         pomoRemainingSeconds = pomoSessionDuration;
                     } else { pomoRemainingSeconds--; }
                     syncPomoDisplayDigits();
                 }, 1000);
-                btn.innerHTML = '<i data-lucide="pause" class="w-3.5 h-3.5"></i> PAUSE';
+                triggerButtons.forEach(btn => btn.innerHTML = '<i data-lucide="pause" class="w-3.5 h-3.5"></i> PAUSE');
             }
-            lucide.createIcons();
+            syncRenderCanvas();
         }
 
         function resetPomoState() {
             if(pomoTimerReference) { clearInterval(pomoTimerReference); pomoTimerReference = null; }
             pomoRemainingSeconds = pomoSessionDuration;
-            document.getElementById('pomo-trigger-btn').innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> START';
+            document.querySelectorAll('#pomo-trigger-btn').forEach(btn => btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> START');
             syncPomoDisplayDigits();
-            lucide.createIcons();
+            syncRenderCanvas();
         }
 
         function syncPomoDisplayDigits() {
             const m = Math.floor(pomoRemainingSeconds / 60);
             const s = pomoRemainingSeconds % 60;
-            document.getElementById('pomo-clock-digits').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            const computedString = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            
+            // Sync digit values into main dashboard and popouts simultaneously
+            const elements = document.querySelectorAll('#pomo-clock-digits');
+            elements.forEach(el => el.innerText = computedString);
         }
 
         function toggleAppTheme() {
