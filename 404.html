@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Grid Command Matrix v2</title>
+    <title>Minimal Focus Command Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    animation: { 'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
             }
         }
@@ -26,337 +25,113 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden pb-8">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen p-4 lg:p-6 space-y-6">
 
-    <div id="auth-wall" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md transition-opacity duration-500">
-        <div id="auth-card" class="glass p-8 rounded-2xl shadow-2xl max-w-md w-full text-center mx-4">
-            <div class="inline-flex p-4 bg-indigo-500/10 rounded-full text-indigo-500 mb-4">
-                <i data-lucide="shield-alert" class="w-8 h-8"></i>
+    <header class="glass max-w-5xl mx-auto rounded-2xl p-4 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-indigo-600 rounded-xl text-white">
+                <i data-lucide="clock" class="w-5 h-5"></i>
             </div>
-            <h1 class="text-2xl font-bold tracking-tight mb-2">Initialize Session</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Enter system verification token</p>
-            <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
-                <input type="password" id="password-input" placeholder="Verification token..." class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 text-center tracking-wider outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-xl transition-all shadow-lg shadow-indigo-600/20">Authenticate</button>
-            </form>
+            <div>
+                <h1 class="font-bold tracking-tight text-sm">MINIMAL_TIMER_WORKSPACE</h1>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono" id="live-clock">Syncing...</p>
+            </div>
         </div>
-    </div>
+        <button onclick="toggleAppTheme()" class="p-2 rounded-xl bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-amber-400"><i data-lucide="sun" class="w-4 h-4"></i></button>
+    </header>
 
-    <div id="app-content" class="opacity-0 transition-opacity duration-700 max-w-[1800px] mx-auto p-4 lg:p-6 space-y-6">
+    <main class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         
-        <header class="glass rounded-2xl p-4 flex flex-col lg:flex-row gap-4 items-center justify-between shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-indigo-600 rounded-xl text-white">
-                    <i data-lucide="layout-grid" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg tracking-tight">GRID_COMMAND_CENTER v2</h1>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 font-mono" id="live-clock">Syncing terminal metrics...</p>
-                </div>
+        <section class="glass p-6 rounded-2xl flex flex-col items-center justify-center text-center shadow-md md:col-span-3 lg:col-span-3 xl:col-span-3">
+            <div class="p-3 bg-indigo-500/10 rounded-full text-indigo-500 mb-2">
+                <i data-lucide="timer" class="w-8 h-8"></i>
             </div>
-
-            <div class="flex items-center gap-1 bg-white/20 dark:bg-slate-900/40 p-1 rounded-xl border border-slate-200/50 dark:border-slate-800/50 overflow-x-auto hide-scrollbar">
-                <button onclick="switchActiveGridDay('Mon')" id="tab-Mon" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">MON</button>
-                <button onclick="switchActiveGridDay('Tue')" id="tab-Tue" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">TUE</button>
-                <button onclick="switchActiveGridDay('Wed')" id="tab-Wed" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">WED</button>
-                <button onclick="switchActiveGridDay('Thu')" id="tab-Thu" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">THU</button>
-                <button onclick="switchActiveGridDay('Fri')" id="tab-Fri" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">FRI</button>
-                <button onclick="switchActiveGridDay('Sat')" id="tab-Sat" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">SAT</button>
-                <button onclick="switchActiveGridDay('Sun')" id="tab-Sun" class="text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg transition-all">SUN</button>
+            <span class="text-[10px] text-slate-400 font-mono uppercase tracking-widest mb-1">Focus Session</span>
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="text-5xl font-mono font-bold tracking-tight" id="pomo-clock-digits">25:00</h2>
+                <button onclick="modifyPomoSpan()" class="text-slate-400 hover:text-indigo-500 transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
             </div>
-
-            <div class="flex items-center gap-4 flex-wrap">
-                <div class="bg-indigo-500/10 border border-indigo-500/20 px-3 py-1.5 rounded-xl flex items-center gap-2">
-                    <i data-lucide="zap" class="w-4 h-4 text-amber-400 fill-amber-400"></i>
-                    <span class="text-xs font-mono font-bold text-indigo-400" id="user-xp-display">XP: 0</span>
-                </div>
-                <button onclick="toggleAppTheme()" class="p-2.5 rounded-xl bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-amber-400"><i data-lucide="sun" class="w-4 h-4"></i></button>
-                <button onclick="invalidateAppSession()" class="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20"><i data-lucide="log-out" class="w-4 h-4"></i></button>
-            </div>
-        </header>
-
-        <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div class="glass p-4 rounded-xl flex items-center justify-between shadow-sm">
-                <div class="flex items-center gap-3">
-                    <div class="p-2 bg-indigo-500/10 rounded-lg text-indigo-500"><i data-lucide="timer" class="w-5 h-5"></i></div>
-                    <div>
-                        <span class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Focus Interval</span>
-                        <div class="flex items-center gap-2">
-                            <h3 class="text-xl font-mono font-bold" id="pomo-clock-digits">25:00</h3>
-                            <button onclick="modifyPomoSpan()" class="text-slate-400 hover:text-indigo-500"><i data-lucide="edit-2" class="w-3.5 h-3.5"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <button id="pomo-trigger-btn" onclick="togglePomoState()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs rounded-lg flex items-center gap-1.5 transition-colors"><i data-lucide="play" class="w-3.5 h-3.5"></i> START</button>
-                    <button onclick="resetPomoState()" class="p-2 bg-slate-200 dark:bg-slate-800 rounded-lg"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i></button>
-                </div>
-            </div>
-
-            <div class="glass p-4 rounded-xl flex flex-col justify-center gap-1.5">
-                <span class="text-[10px] text-slate-400 font-mono uppercase tracking-wider flex items-center gap-1"><i data-lucide="music" class="w-3 h-3 text-pink-500"></i> Ambient Audio Engine</span>
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="toggleAmbientSound('rain')" id="sound-rain-btn" class="text-[11px] font-mono py-1 rounded bg-slate-200 dark:bg-slate-800 border border-transparent hover:border-slate-400">🌧️ Rain</button>
-                    <button onclick="toggleAmbientSound('drone')" id="sound-drone-btn" class="text-[11px] font-mono py-1 rounded bg-slate-200 dark:bg-slate-800 border border-transparent hover:border-slate-400">🛸 Drone</button>
-                    <button onclick="toggleAmbientSound('cafe')" id="sound-cafe-btn" class="text-[11px] font-mono py-1 rounded bg-slate-200 dark:bg-slate-800 border border-transparent hover:border-slate-400">☕ Cafe</button>
-                </div>
-            </div>
-
-            <div class="glass p-4 rounded-xl flex flex-col justify-center gap-1.5">
-                <span class="text-[10px] text-slate-400 font-mono uppercase tracking-wider flex items-center gap-1"><i data-lucide="award" class="w-3 h-3 text-emerald-500"></i> Daily Habit Anchors</span>
-                <div class="flex items-center gap-4 justify-around bg-white/10 dark:bg-slate-900/20 p-1.5 rounded-lg">
-                    <label class="flex items-center gap-1.5 text-xs font-mono cursor-pointer"><input type="checkbox" id="habit-hydrate" onchange="awardHabitXp('hydrate')" class="rounded text-emerald-500 focus:ring-0">💧 Hydrate</label>
-                    <label class="flex items-center gap-1.5 text-xs font-mono cursor-pointer"><input type="checkbox" id="habit-commit" onchange="awardHabitXp('commit')" class="rounded text-emerald-500 focus:ring-0">🚀 Commit</label>
-                    <label class="flex items-center gap-1.5 text-xs font-mono cursor-pointer"><input type="checkbox" id="habit-stretch" onchange="awardHabitXp('stretch')" class="rounded text-emerald-500 focus:ring-0">🧘 Stretch</label>
-                </div>
+            <div class="flex gap-3 w-full max-w-sm">
+                <button id="pomo-trigger-btn" onclick="togglePomoState()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-600/10"><i data-lucide="play" class="w-4 h-4"></i> START</button>
+                <button onclick="resetPomoState()" class="p-3 bg-slate-200 dark:bg-slate-800 rounded-xl hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
             </div>
         </section>
 
-        <main class="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
-            
-            <section class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[650px] xl:col-span-1">
-                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-                    <h2 class="font-bold text-xs tracking-wide uppercase font-mono flex items-center gap-2 text-slate-400"><i data-lucide="check-square" class="text-emerald-500 w-4 h-4"></i> Action Tasks</h2>
-                    <span id="todo-count" class="text-[10px] bg-slate-200 dark:bg-slate-800 font-mono px-2 py-0.5 rounded-md">0 Open</span>
-                </div>
-                <div class="flex gap-2">
-                    <input type="text" id="todo-entry" placeholder="Add sprint task item..." class="w-full text-xs px-3 py-2.5 rounded-xl bg-white/30 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 outline-none focus:ring-1 focus:ring-indigo-500">
-                    <button onclick="commitTodoRow()" class="bg-indigo-600 text-white px-3.5 rounded-xl hover:bg-indigo-500"><i data-lucide="plus" class="w-4 h-4"></i></button>
-                </div>
-                <div id="todo-stack" class="space-y-2 overflow-y-auto max-h-[500px] hide-scrollbar flex-1"></div>
-            </section>
+        <section class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[400px] md:col-span-1/2 shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 cursor-grab active:cursor-grabbing">
+                <h2 class="font-bold text-xs tracking-wide uppercase font-mono flex items-center gap-2 text-slate-400"><i data-lucide="check-square" class="text-emerald-500 w-4 h-4"></i> Tasks</h2>
+                <span id="todo-count" class="text-[10px] bg-slate-200 dark:bg-slate-800 font-mono px-2 py-0.5 rounded-md">0 Open</span>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="todo-entry" placeholder="Add task item..." class="w-full text-xs px-3 py-2 bg-white/30 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500">
+                <button onclick="commitTodoRow()" class="bg-indigo-600 text-white px-3 rounded-xl hover:bg-indigo-500 transition-colors"><i data-lucide="plus" class="w-4 h-4"></i></button>
+            </div>
+            <div id="todo-stack" class="space-y-2 overflow-y-auto max-h-[350px] hide-scrollbar flex-1"></div>
+        </section>
 
-            <section class="xl:col-span-2 space-y-4">
-                <div class="flex items-center justify-between bg-white/10 dark:bg-slate-900/30 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
-                    <span class="text-xs font-mono font-bold tracking-wide uppercase flex items-center gap-2 text-indigo-500"><i data-lucide="grid" class="w-4 h-4"></i> Master Hour Pro Grid Matrix</span>
-                    <span class="text-[10px] text-slate-400 font-mono">Pulsing Real-Time Monitoring Array</span>
-                </div>
-                
-                <div id="master-hourly-grid-canvas" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    </div>
-            </section>
+        <section class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[400px] md:col-span-1/2 shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 cursor-grab active:cursor-grabbing">
+                <h2 class="font-bold text-xs tracking-wide uppercase font-mono flex items-center gap-2 text-slate-400"><i data-lucide="sticky-note" class="text-amber-500 w-4 h-4"></i> Scratchpad</h2>
+            </div>
+            <div class="flex flex-col gap-2">
+                <textarea id="note-entry" placeholder="Log quick thoughts..." class="w-full text-xs p-3 rounded-xl bg-white/30 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 outline-none focus:ring-1 focus:ring-indigo-500 h-16 resize-none"></textarea>
+                <button onclick="commitNoteRow()" class="bg-indigo-600 text-white py-2 rounded-xl text-xs font-mono hover:bg-indigo-500 transition-colors">Save Note</button>
+            </div>
+            <div id="note-stack" class="space-y-3 overflow-y-auto max-h-[300px] hide-scrollbar flex-1"></div>
+        </section>
 
-            <section class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[650px] xl:col-span-1">
-                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-                    <h2 class="font-bold text-xs tracking-wide uppercase font-mono flex items-center gap-2 text-slate-400"><i data-lucide="sticky-note" class="text-amber-500 w-4 h-4"></i> Scratch Logging</h2>
-                </div>
-                <div class="flex gap-2">
-                    <textarea id="note-entry" placeholder="Log dynamic thoughts..." class="w-full text-xs p-3 rounded-xl bg-white/30 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 outline-none focus:ring-1 focus:ring-indigo-500 h-16 resize-none"></textarea>
-                    <button onclick="commitNoteRow()" class="bg-indigo-600 text-white px-4 rounded-xl hover:bg-indigo-500"><i data-lucide="plus" class="w-4 h-4"></i></button>
-                </div>
-                <div id="note-stack" class="space-y-3 overflow-y-auto max-h-[500px] hide-scrollbar flex-1"></div>
-            </section>
-        </main>
-    </div>
+    </main>
 
     <script>
-        const MASTER_AUTH_TOKEN = "void";
-
-        let dashboardData = {
+        let appState = {
             notes: [],
             todos: [],
-            selectedDay: "Mon",
-            themeMode: "dark",
-            userXp: 10,
-            habits: { hydrate: false, commit: false, stretch: false },
-            weeklyGridMatrix: {
-                "Mon": {}, "Tue": {}, "Wed": {}, "Thu": {}, "Fri": {}, "Sat": {}, "Sun": {}
-            }
+            themeMode: "dark"
         };
-
-        const timelineHoursList = [
-            "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", 
-            "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", 
-            "19:00", "20:00", "21:00", "22:00"
-        ];
 
         let pomoTimerReference = null;
         let pomoSessionDuration = 1500;
         let pomoRemainingSeconds = 1500;
-        
-        // Synth context mapping audio generators
-        let audioCtxInstance = null;
-        let liveAudioNodes = {};
 
-        function handleAuth(e) {
-            if(e) e.preventDefault();
-            if(document.getElementById('password-input').value === MASTER_AUTH_TOKEN) {
-                document.getElementById('auth-wall').classList.add('opacity-0', 'pointer-events-none');
-                document.getElementById('app-content').classList.remove('opacity-0');
-                localStorage.setItem('grid_session_authenticated_v2', 'true');
-                initializeWorkspaceEngine();
-            } else {
-                document.getElementById('auth-card').classList.add('animate-bounce');
-                setTimeout(() => document.getElementById('auth-card').classList.remove('animate-bounce'), 500);
-            }
-        }
-
-        function invalidateAppSession() {
-            localStorage.removeItem('grid_session_authenticated_v2');
-            window.location.reload();
-        }
-
-        function initializeWorkspaceEngine() {
-            const vault = localStorage.getItem('grid_vault_store_data_v2');
+        function initializeWorkspace() {
+            const vault = localStorage.getItem('minimal_focus_vault');
             if(vault) {
-                try {
-                    let parsed = JSON.parse(vault);
-                    if(!parsed.weeklyGridMatrix) parsed.weeklyGridMatrix = dashboardData.weeklyGridMatrix;
-                    if(!parsed.userXp) parsed.userXp = 0;
-                    if(!parsed.habits) parsed.habits = { hydrate: false, commit: false, stretch: false };
-                    dashboardData = parsed;
-                } catch(e) { console.error("Re-syncing data signatures."); }
+                try { appState = JSON.parse(vault); } catch(e) { console.error("Re-syncing data signatures."); }
             }
-            
-            // Build default configurations for matrix tiles missing metadata signatures
-            Object.keys(dashboardData.weeklyGridMatrix).forEach(day => {
-                timelineHoursList.forEach(hr => {
-                    if(!dashboardData.weeklyGridMatrix[day][hr]) {
-                        dashboardData.weeklyGridMatrix[day][hr] = {
-                            title: "Open Workspace Slot",
-                            schedule: "No focus sprint mapped to this hour frame block yet.",
-                            image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80"
-                        };
-                    }
-                });
-            });
-
-            // Restore habits presentation checks
-            document.getElementById('habit-hydrate').checked = dashboardData.habits.hydrate || false;
-            document.getElementById('habit-commit').checked = dashboardData.habits.commit || false;
-            document.getElementById('habit-stretch').checked = dashboardData.habits.stretch || false;
-
             applySyncThemeState();
             syncRenderCanvas();
-            runLoopTickers();
+            
+            setInterval(() => {
+                document.getElementById('live-clock').innerText = new Date().toLocaleTimeString();
+            }, 1000);
         }
 
         function saveWorkspaceState() {
-            localStorage.setItem('grid_vault_store_data_v2', JSON.stringify(dashboardData));
+            localStorage.setItem('minimal_focus_vault', JSON.stringify(appState));
             syncRenderCanvas();
         }
 
-        function incrementUserXpGain(amt) {
-            dashboardData.userXp += amt;
-            document.getElementById('user-xp-display').innerText = `XP: ${dashboardData.userXp}`;
-        }
-
-        function awardHabitXp(key) {
-            const el = document.getElementById(`habit-${key}`);
-            dashboardData.habits[key] = el.checked;
-            if(el.checked) incrementUserXpGain(15);
-            localStorage.setItem('grid_vault_store_data_v2', JSON.stringify(dashboardData));
-        }
-
         function syncRenderCanvas() {
-            document.getElementById('user-xp-display').innerText = `XP: ${dashboardData.userXp}`;
             renderTodoComponent();
             renderNoteComponent();
-            renderMatrixGridBlocks();
         }
 
-        // RE-ENGINEERED MAGNIFIED MATRIX CARD COMPONENT CONSTRUCTORS
-        function switchActiveGridDay(dayKey) {
-            dashboardData.selectedDay = dayKey;
-            saveWorkspaceState();
-        }
-
-        function changeBlockContentField(hr, metricKey) {
-            const currentDay = dashboardData.selectedDay || "Mon";
-            const currentObj = dashboardData.weeklyGridMatrix[currentDay][hr];
-            const promptedResult = prompt(`Update grid parameter values for [${metricKey.toUpperCase()}]:`, currentObj[metricKey]);
-            
-            if(promptedResult !== null) {
-                currentObj[metricKey] = promptedResult.trim() || (metricKey === 'image' ? "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80" : "Unallocated");
-                incrementUserXpGain(5);
-                saveWorkspaceState();
-            }
-        }
-
-        function renderMatrixGridBlocks() {
-            const canvas = document.getElementById('master-hourly-grid-canvas');
-            if(!canvas) return;
-
-            const targetDay = dashboardData.selectedDay || "Mon";
-            
-            ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(d => {
-                const btn = document.getElementById(`tab-${d}`);
-                if(btn) {
-                    btn.className = d === targetDay 
-                        ? "text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-sm"
-                        : "text-[11px] font-mono font-bold px-3 py-1.5 rounded-lg text-slate-400 hover:bg-white/10 dark:hover:bg-slate-800/40";
-                }
-            });
-
-            const currentTimestamp = new Date();
-            const paddedHourString = String(currentTimestamp.getHours()).padStart(2, '0') + ":00";
-
-            canvas.innerHTML = timelineHoursList.map(hr => {
-                const blockMeta = dashboardData.weeklyGridMatrix[targetDay][hr];
-                const isActiveRealtimeHour = paddedHourString === hr;
-                
-                // Extra-large styling footprint configuration properties
-                const dynamicFramePulseColor = isActiveRealtimeHour 
-                    ? "border-2 border-indigo-500 shadow-xl shadow-indigo-500/20 bg-indigo-500/5 ring-2 ring-indigo-500/30" 
-                    : "border border-slate-200/60 dark:border-slate-800/80 bg-white/50 dark:bg-slate-900/40";
-
-                return `
-                    <div class="glass p-5 rounded-2xl flex flex-col justify-between transition-all relative overflow-hidden group min-h-[220px] shadow-md ${dynamicFramePulseColor}">
-                        
-                        <div class="flex items-center justify-between border-b border-slate-200/40 dark:border-slate-800/40 pb-2">
-                            <span class="text-xs font-mono bg-slate-200 dark:bg-slate-800 px-2.5 py-1 rounded-md font-bold text-slate-600 dark:text-slate-300 tracking-wider">${hr}</span>
-                            ${isActiveRealtimeHour ? `<span class="text-xs text-indigo-500 font-mono tracking-widest font-bold animate-pulse">● LIVE TIMELINE SLICE</span>` : ''}
-                        </div>
-
-                        <div class="flex items-center gap-4 my-3 flex-1">
-                            <div class="relative group/img shrink-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm w-20 h-20">
-                                <img src="${blockMeta.image}" class="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-300" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80'">
-                                <button onclick="changeBlockContentField('${hr}', 'image')" class="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white" title="Modify Background Asset">
-                                    <i data-lucide="camera" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-
-                            <div class="space-y-1 truncate flex-1">
-                                <h4 onclick="changeBlockContentField('${hr}', 'title')" class="text-sm font-bold tracking-tight cursor-pointer hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors truncate" title="Modify block headline label">
-                                    ${blockMeta.title}
-                                </h4>
-                                <p onclick="changeBlockContentField('${hr}', 'schedule')" class="text-xs font-mono text-slate-400 dark:text-slate-500 leading-relaxed cursor-pointer hover:text-indigo-400 break-words whitespace-normal line-clamp-3" title="Modify content block schedule payload">
-                                    ${blockMeta.schedule}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between border-t border-slate-200/40 dark:border-slate-800/40 pt-2 text-[10px] text-slate-400 font-mono">
-                            <span class="italic text-slate-400/60">Matrix Segment ${hr}</span>
-                            <button onclick="changeBlockContentField('${hr}', 'title')" class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-indigo-500 font-medium hover:underline"><i data-lucide="edit-3" class="w-3 h-3"></i> Quick Edit</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            lucide.createIcons();
-        }
-
-        // SIDEBAR ACTION PIPELINE METHODS
+        // TO-DO PIPELINE METHODS
         function commitTodoRow() {
             const el = document.getElementById('todo-entry');
             if(!el.value.trim()) return;
-            dashboardData.todos.push({ id: Date.now(), task: el.value.trim(), checked: false });
+            appState.todos.push({ id: Date.now(), task: el.value.trim(), checked: false });
             el.value = "";
-            incrementUserXpGain(10);
             saveWorkspaceState();
         }
 
         function toggleTodoCheck(id) {
-            const matchingItem = dashboardData.todos.find(t => t.id === id);
-            if(matchingItem) { 
-                matchingItem.checked = !matchingItem.checked; 
-                if(matchingItem.checked) incrementUserXpGain(20);
-                saveWorkspaceState(); 
-            }
+            const matchingItem = appState.todos.find(t => t.id === id);
+            if(matchingItem) { matchingItem.checked = !matchingItem.checked; saveWorkspaceState(); }
         }
 
         function dropTodoItem(id) {
-            dashboardData.todos = dashboardData.todos.filter(t => t.id !== id);
+            appState.todos = appState.todos.filter(t => t.id !== id);
             saveWorkspaceState();
         }
 
@@ -364,10 +139,10 @@
             const list = document.getElementById('todo-stack');
             if(!list) return;
 
-            const openCount = dashboardData.todos.filter(t => !t.checked).length;
+            const openCount = appState.todos.filter(t => !t.checked).length;
             document.getElementById('todo-count').innerText = `${openCount} Open`;
 
-            list.innerHTML = dashboardData.todos.map(t => `
+            list.innerHTML = appState.todos.map(t => `
                 <div class="flex items-center justify-between p-2.5 bg-white/20 dark:bg-slate-900/20 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
                     <div class="flex items-center gap-2 truncate flex-1">
                         <input type="checkbox" ${t.checked ? 'checked' : ''} onchange="toggleTodoCheck(${t.id})" class="rounded text-indigo-600 focus:ring-0 cursor-pointer h-3.5 w-3.5">
@@ -379,18 +154,17 @@
             lucide.createIcons();
         }
 
-        // SIDEBAR SCRATCHPAD METRIC CAPABILITIES
+        // NOTES ENGINE METHODS
         function commitNoteRow() {
             const el = document.getElementById('note-entry');
             if(!el.value.trim()) return;
-            dashboardData.notes.unshift({ id: Date.now(), text: el.value.trim(), stamp: new Date().toLocaleTimeString() });
+            appState.notes.unshift({ id: Date.now(), text: el.value.trim(), stamp: new Date().toLocaleTimeString() });
             el.value = "";
-            incrementUserXpGain(5);
             saveWorkspaceState();
         }
 
         function dropNoteItem(id) {
-            dashboardData.notes = dashboardData.notes.filter(n => n.id !== id);
+            appState.notes = appState.notes.filter(n => n.id !== id);
             saveWorkspaceState();
         }
 
@@ -398,7 +172,7 @@
             const list = document.getElementById('note-stack');
             if(!list) return;
 
-            list.innerHTML = dashboardData.notes.map(n => `
+            list.innerHTML = appState.notes.map(n => `
                 <div class="p-3 bg-white/20 dark:bg-slate-900/20 rounded-xl border border-slate-200/50 dark:border-slate-800/50 flex flex-col gap-1">
                     <p class="text-xs leading-relaxed break-words whitespace-pre-wrap">${n.text}</p>
                     <div class="flex items-center justify-between mt-1 pt-1 border-t border-slate-200/20 dark:border-slate-800/20">
@@ -410,62 +184,9 @@
             lucide.createIcons();
         }
 
-        // CHROMIUM WEBAUDIO AMBIENT OSCILLATOR SOUND SYNTHESIZER
-        function toggleAmbientSound(type) {
-            if (!audioCtxInstance) { audioCtxInstance = new (window.AudioContext || window.webkitAudioContext)(); }
-            
-            const btn = document.getElementById(`sound-${type}-btn`);
-            
-            if (liveAudioNodes[type]) {
-                liveAudioNodes[type].stop();
-                delete liveAudioNodes[type];
-                btn.classList.remove('bg-indigo-600', 'text-white');
-                btn.classList.add('bg-slate-200', 'dark:bg-slate-800');
-            } else {
-                // Initialize custom procedural synth shapes to build rain / white noise generators inside the browser bounds
-                const bufferSize = 2 * audioCtxInstance.sampleRate;
-                const noiseBuffer = audioCtxInstance.createBuffer(1, bufferSize, audioCtxInstance.sampleRate);
-                const outputData = noiseBuffer.getChannelData(0);
-                
-                for (let i = 0; i < bufferSize; i++) {
-                    outputData[i] = Math.random() * 2 - 1;
-                }
-                
-                const noiseSourceNode = audioCtxInstance.createBufferSource();
-                noiseSourceNode.buffer = noiseBuffer;
-                noiseSourceNode.loop = true;
-                
-                const audioFilterNode = audioCtxInstance.createBiquadFilter();
-                
-                if (type === 'rain') {
-                    audioFilterNode.type = 'bandpass';
-                    audioFilterNode.frequency.value = 400;
-                } else if (type === 'drone') {
-                    audioFilterNode.type = 'lowpass';
-                    audioFilterNode.frequency.value = 80;
-                } else { // cafe background shape modeling
-                    audioFilterNode.type = 'peaking';
-                    audioFilterNode.frequency.value = 1200;
-                }
-                
-                const outputGainVolumeNode = audioCtxInstance.createGain();
-                outputGainVolumeNode.gain.value = 0.08; 
-                
-                noiseSourceNode.connect(audioFilterNode);
-                audioFilterNode.connect(outputGainVolumeNode);
-                outputGainVolumeNode.connect(audioCtxInstance.destination);
-                
-                noiseSourceNode.start();
-                liveAudioNodes[type] = noiseSourceNode;
-                
-                btn.classList.remove('bg-slate-200', 'dark:bg-slate-800');
-                btn.classList.add('bg-indigo-600', 'text-white');
-            }
-        }
-
-        // POMODORO FOCUS LOGIC SPANS
+        // TIMER FUNCTIONS
         function modifyPomoSpan() {
-            const targetMins = prompt("Specify active countdown cycle metric width (minutes):", Math.floor(pomoSessionDuration / 60));
+            const targetMins = prompt("Specify focus session (minutes):", Math.floor(pomoSessionDuration / 60));
             if(targetMins && !isNaN(targetMins) && targetMins > 0) {
                 pomoSessionDuration = Math.floor(targetMins) * 60;
                 resetPomoState();
@@ -484,8 +205,7 @@
                         clearInterval(pomoTimerReference);
                         pomoTimerReference = null;
                         btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> START';
-                        incrementUserXpGain(100); 
-                        alert("Focus block sequence finished successfully! +100 XP gained.");
+                        alert("Session complete!");
                         pomoRemainingSeconds = pomoSessionDuration;
                     } else { pomoRemainingSeconds--; }
                     syncPomoDisplayDigits();
@@ -509,35 +229,18 @@
             document.getElementById('pomo-clock-digits').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
         }
 
-        // MASTER CONTROL SYSTEMS LOGS
-        function runLoopTickers() {
-            setInterval(() => {
-                const now = new Date();
-                document.getElementById('live-clock').innerText = `SYS_TIME // ${now.toLocaleTimeString()}`;
-            }, 1000);
-
-            // Dynamically refresh block highlights accurately every minute bounds change
-            setInterval(() => { renderMatrixGridBlocks(); }, 60000);
-        }
-
         function toggleAppTheme() {
-            dashboardData.themeMode = dashboardData.themeMode === 'dark' ? 'light' : 'dark';
+            appState.themeMode = appState.themeMode === 'dark' ? 'light' : 'dark';
             applySyncThemeState();
-            localStorage.setItem('grid_vault_store_data_v2', JSON.stringify(dashboardData));
+            localStorage.setItem('minimal_focus_vault', JSON.stringify(appState));
         }
 
         function applySyncThemeState() {
-            if(dashboardData.themeMode === 'dark') document.documentElement.classList.add('dark');
+            if(appState.themeMode === 'dark') document.documentElement.classList.add('dark');
             else document.documentElement.classList.remove('dark');
         }
 
-        window.onload = () => {
-            if(localStorage.getItem('grid_session_authenticated_v2') === 'true') {
-                document.getElementById('auth-wall').classList.add('opacity-0', 'pointer-events-none');
-                document.getElementById('app-content').classList.remove('opacity-0');
-                initializeWorkspaceEngine();
-            } else { lucide.createIcons(); }
-        };
+        window.onload = () => { initializeWorkspace(); };
     </script>
 </body>
 </html>
