@@ -1,367 +1,635 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Floating Pop-Out Workspace v2</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>CloudStream Desktop Terminal</title>
     <style>
-        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        .glass { background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .dark .glass { background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.04); }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #eef2f7;
+            color: #333333;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Full Screen Desktop Layout Split */
+        #app-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            background-color: #f3f6fa;
+        }
+
+        /* Left Side Management Deck */
+        .sidebar-deck {
+            width: 320px;
+            background: linear-gradient(135deg, #1d2030 0%, #0c0d14 100%);
+            padding: 30px 20px;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            z-index: 2;
+            box-shadow: 5px 0 30px rgba(0,0,0,0.1);
+        }
+
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .header-icon {
+            font-size: 20px;
+            opacity: 0.8;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .header-icon:hover { opacity: 1; }
+
+        .sidebar-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8fa0dd;
+            margin: 20px 0 10px 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .add-playlist-btn {
+            background: transparent;
+            border: none;
+            color: #4d7cff;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Playlist Navigation Items */
+        .playlist-container {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .playlist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.03);
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .playlist-item:hover, .playlist-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .remove-p-btn {
+            background: transparent;
+            border: none;
+            color: #ff4d4d;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .playlist-item:hover .remove-p-btn {
+            opacity: 1;
+        }
+
+        /* Right Side Main Workstation Dashboard */
+        .main-deck {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Hero Player Top Card Bar */
+        .hero-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+            box-shadow: 0 10px 30px rgba(160, 175, 195, 0.15);
+            border: 1px solid rgba(255,255,255,0.8);
+            margin-bottom: 40px;
+        }
+
+        .hero-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .hero-icon-box {
+            width: 65px;
+            height: 65px;
+            background: #a370f7;
+            border-radius: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            box-shadow: 0 8px 20px rgba(163, 112, 247, 0.2);
+        }
+
+        .hero-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1d2030;
+            margin-bottom: 4px;
+        }
+
+        .hero-subtitle {
+            font-size: 13px;
+            color: #7e8da2;
+        }
+
+        /* Timeline Slider element */
+        .progress-block {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .progress-wrapper {
+            width: 100%;
+            background: #e4ebf5;
+            height: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: #4d7cff;
+            height: 100%;
+            width: 0%;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(77, 124, 255, 0.5);
+        }
+
+        /* Centered Grid workspace area */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 160px));
+            gap: 20px;
+            overflow-y: auto;
+            flex: 1;
+            padding-bottom: 20px;
+        }
+
+        .grid-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(160, 175, 195, 0.12);
+            border: 1px solid rgba(255,255,255,0.8);
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .grid-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 25px rgba(160, 175, 195, 0.2);
+        }
+
+        .grid-card.active {
+            background: #eef4ff;
+            border-color: #4d7cff;
+        }
+
+        .card-icon-frame {
+            width: 70px;
+            height: 70px;
+            background: #f0f4f8;
+            border-radius: 22px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3a4e;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Trash track option button */
+        .remove-track-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            color: #9aa8bd;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+        }
+
+        .grid-card:hover .remove-track-btn {
+            display: block;
+        }
+
+        .remove-track-btn:hover {
+            color: #ff4d4d;
+        }
+
+        /* Controls Bar Layout */
+        .hero-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .ctrl-btn {
+            background: #f0f4f8;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .ctrl-btn:hover { background: #e4ebf5; }
+
+        #play-trigger {
+            background: #1d2030;
+            color: white;
+            width: 55px;
+            height: 55px;
+            font-size: 18px;
+        }
+
+        /* Creator Module Overlay Console */
+        #admin-panel {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(12, 13, 20, 0.96);
+            z-index: 10;
+            color: white;
+            padding: 60px;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 500px;
+            box-shadow: 10px 0 40px rgba(0,0,0,0.5);
+        }
+
+        .admin-input {
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        .file-upload-label {
+            background: #4d7cff;
+            color: white;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            display: block;
+            transition: background 0.2s;
+        }
+        .file-upload-label:hover { background: #3b66df; }
+        #file-input { display: none; }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen p-4 lg:p-6 space-y-6">
+<body>
 
-    <header class="glass max-w-5xl mx-auto rounded-2xl p-4 flex items-center justify-between shadow-sm">
-        <div class="flex items-center gap-3">
-            <div class="p-2 bg-indigo-600 rounded-xl text-white">
-                <i data-lucide="clock" class="w-5 h-5"></i>
-            </div>
-            <div>
-                <h1 class="font-bold tracking-tight text-sm">POP_OUT_WORKSPACE</h1>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono" id="live-clock">Syncing...</p>
-            </div>
-        </div>
-        <button onclick="toggleAppTheme()" class="p-2 rounded-xl bg-white/40 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-amber-400"><i data-lucide="sun" class="w-4 h-4"></i></button>
-    </header>
-
-    <main class="max-w-5xl mx-auto space-y-6" id="workspace-main">
+    <div id="app-container">
         
-        <section id="widget-timer" class="glass p-6 rounded-2xl flex flex-col items-center justify-center text-center shadow-md relative group">
-            <button onclick="popOutWidget('widget-timer', 'Focus Timer', 400, 300)" class="absolute top-4 right-4 p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 hover:text-indigo-500 transition-colors opacity-0 group-hover:opacity-100" title="Pop out into floating window">
-                <i data-lucide="external-link" class="w-4 h-4"></i>
-            </button>
-            <div class="p-3 bg-indigo-500/10 rounded-full text-indigo-500 mb-2">
-                <i data-lucide="timer" class="w-8 h-8"></i>
+        <div class="sidebar-deck">
+            <div class="header-nav">
+                <span style="font-weight: 700; font-size: 16px; letter-spacing: 1px; color: #4d7cff;">CLOUD_STREAM</span>
+                <span class="header-icon" onclick="requestAdminAccess()">⚙️</span>
             </div>
-            <span class="text-[10px] text-slate-400 font-mono uppercase tracking-widest mb-1">Focus Session</span>
-            <div class="flex items-center gap-3 mb-4">
-                <h2 class="text-5xl font-mono font-bold tracking-tight" id="pomo-clock-digits">25:00</h2>
-                <button onclick="modifyPomoSpan()" class="text-slate-400 hover:text-indigo-500 transition-colors"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-            </div>
-            <div class="flex gap-3 w-full max-w-sm">
-                <button id="pomo-trigger-btn" onclick="togglePomoState()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-600/10"><i data-lucide="play" class="w-4 h-4"></i> START</button>
-                <button onclick="resetPomoState()" class="p-3 bg-slate-200 dark:bg-slate-800 rounded-xl hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
-            </div>
-        </section>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             
-            <section id="widget-todo" class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[400px] shadow-sm relative group">
-                <button onclick="popOutWidget('widget-todo', 'Tasks', 450, 500)" class="absolute top-4 right-4 p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 hover:text-indigo-500 transition-colors opacity-0 group-hover:opacity-100" title="Pop out into floating window">
-                    <i data-lucide="external-link" class="w-4 h-4"></i>
-                </button>
-                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-                    <h2 class="font-bold text-xs tracking-wide uppercase font-mono flex items-center gap-2 text-slate-400">
-                        <i data-lucide="check-square" class="text-emerald-500 w-4 h-4"></i> Tasks
-                    </h2>
-                    <span id="todo-count" class="text-[10px] bg-slate-200 dark:bg-slate-800 font-mono px-2 py-0.5 rounded-md mr-8">0 Open</span>
-                </div>
-                <div class="flex gap-2">
-                    <input type="text" id="todo-entry" placeholder="Add task item..." class="w-full text-xs px-3 py-2 bg-white/30 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500">
-                    <button onclick="commitTodoRow()" class="bg-indigo-600 text-white px-3 rounded-xl hover:bg-indigo-500 transition-colors"><i data-lucide="plus" class="w-4 h-4"></i></button>
-                </div>
-                <div id="todo-stack" class="space-y-2 overflow-y-auto max-h-[350px] hide-scrollbar flex-1"></div>
-            </section>
+            <div class="sidebar-section-title">
+                <span>PLAYLISTS</span>
+                <button class="add-playlist-btn" onclick="requestAdminAccess()">+ NEW</button>
+            </div>
 
-            <section id="widget-notes" class="glass p-5 rounded-2xl flex flex-col gap-4 min-h-[400px] shadow-sm relative group">
-                <button onclick="popOutWidget('widget-notes', 'Scratchpad', 450, 500)" class="absolute top-4 right-4 p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 hover:text-indigo-500 transition-colors opacity-0 group-hover:opacity-100" title="Pop out into floating window">
-                    <i data-lucide="external-link" class="w-4 h-4"></i>
-                </button>
-                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-                    <h2 class="font-bold text-xs tracking-wide uppercase font-mono flex items-center gap-2 text-slate-400">
-                        <i data-lucide="sticky-note" class="text-amber-500 w-4 h-4"></i> Scratchpad
-                    </h2>
+            <div class="playlist-container" id="playlist-mount">
                 </div>
-                <div class="flex flex-col gap-2">
-                    <textarea id="note-entry" placeholder="Log quick thoughts..." class="w-full text-xs p-3 rounded-xl bg-white/30 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 outline-none focus:ring-1 focus:ring-indigo-500 h-16 resize-none"></textarea>
-                    <button onclick="commitNoteRow()" class="bg-indigo-600 text-white py-2 rounded-xl text-xs font-mono hover:bg-indigo-500 transition-colors">Save Note</button>
-                </div>
-                <div id="note-stack" class="space-y-3 overflow-y-auto max-h-[300px] hide-scrollbar flex-1"></div>
-            </section>
-
         </div>
-    </main>
+
+        <div class="main-deck">
+            
+            <div class="hero-card">
+                <div class="hero-info">
+                    <div class="hero-icon-box" id="hero-art">🎵</div>
+                    <div>
+                        <div class="hero-title" id="current-title">Select Module Track</div>
+                        <div class="hero-subtitle" id="current-artist">Ready for streaming audio deployment</div>
+                    </div>
+                </div>
+
+                <div class="progress-block">
+                    <div class="progress-wrapper" id="seek-timeline">
+                        <div class="progress-fill" id="playback-progress"></div>
+                    </div>
+                </div>
+
+                <div class="hero-controls">
+                    <button class="ctrl-btn" id="prev-btn">⏮</button>
+                    <button class="ctrl-btn" id="play-trigger">▶</button>
+                    <button class="ctrl-btn" id="next-btn">⏭</button>
+                </div>
+            </div>
+
+            <div class="items-grid" id="grid-mount">
+                </div>
+        </div>
+
+        <div id="admin-panel">
+            <h2 style="color: #4d7cff; letter-spacing: 1px;">CREATOR TERMINAL //</h2>
+            <p style="font-size: 13px; color: #8f9db5; margin-bottom: 10px;">Authenticated Admin Management Access Console</p>
+            
+            <h3 style="font-size: 14px; color:#fff; margin-top:10px;">Option A: Choose File From Computer</h3>
+            <label for="file-input" class="file-upload-label">📂 Select Audio File</label>
+            <input type="file" id="file-input" accept="audio/*">
+            <div id="file-name-preview" style="font-size: 12px; color: #00ff66; word-break: break-all;"></div>
+            <button onclick="adminAddTrack()" style="background:#00ff66; color:black; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; width: 100%;">Deploy Local File</button>
+            
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+            
+            <h3 style="font-size: 14px; color:#fff;">Option B: Create Blank Custom Playlist</h3>
+            <input type="text" id="new-playlist-name" class="admin-input" placeholder="Playlist Name">
+            <button onclick="adminAddPlaylist()" style="background:#ffffff; color:black; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">Generate Playlist</button>
+            
+            <button onclick="document.getElementById('admin-panel').style.display='none'" style="background:transparent; color:#ff4d4d; margin-top:30px; border:none; cursor:pointer; text-align:left; font-weight:bold;">[X] SHUTDOWN CONSOLE</button>
+        </div>
+
+    </div>
 
     <script>
-        let appState = {
-            notes: [],
-            todos: [],
-            themeMode: "dark"
-        };
+        // --- DATA STORE ---
+        let playlists = [
+            { id: "all", name: "All Tracks" },
+            { id: "vibes", name: "Lo-Fi Chill Vibes" },
+            { id: "study", name: "Deep Study Mode" }
+        ];
 
-        let pomoTimerReference = null;
-        let pomoSessionDuration = 1500;
-        let pomoRemainingSeconds = 1500;
-        let runningPipWindows = {};
+        let masterTracks = [
+            { id: 1, title: "Cyber Sunset", artist: "System Core", category: "vibes", icon: "🌅", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+            { id: 2, title: "Study Ambient", artist: "Lo-Fi Lab", category: "study", icon: "📝", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" }
+        ];
 
-        function initializeWorkspace() {
-            const vault = localStorage.getItem('minimal_focus_vault');
-            if(vault) {
-                try { appState = JSON.parse(vault); } catch(e) { console.error("Data fallback execution."); }
-            }
-            applySyncThemeState();
-            syncRenderCanvas();
-            
-            setInterval(() => {
-                document.getElementById('live-clock').innerText = new Date().toLocaleTimeString();
-            }, 1000);
+        let activePlaylistId = 'all';
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+        let selectedFileBlobUrl = null;
+        let selectedFileName = "";
+        const audio = new Audio();
+
+        const gridMount = document.getElementById('grid-mount');
+        const playlistMount = document.getElementById('playlist-mount');
+        const heroArt = document.getElementById('hero-art');
+        const currentTitle = document.getElementById('current-title');
+        const currentArtist = document.getElementById('current-artist');
+        const playTrigger = document.getElementById('play-trigger');
+        const playbackProgress = document.getElementById('playback-progress');
+        const seekTimeline = document.getElementById('seek-timeline');
+        const fileInput = document.getElementById('file-input');
+        const fileNamePreview = document.getElementById('file-name-preview');
+
+        function getFilteredTracks() {
+            if (activePlaylistId === 'all') return masterTracks;
+            return masterTracks.filter(t => t.category === activePlaylistId);
         }
 
-        function saveWorkspaceState() {
-            localStorage.setItem('minimal_focus_vault', JSON.stringify(appState));
-            syncRenderCanvas();
-        }
-
-        function syncRenderCanvas() {
-            renderTodoComponent();
-            renderNoteComponent();
-            
-            // Loop through active pop-out windows to make sure they get updated elements
-            Object.keys(runningPipWindows).forEach(id => {
-                if (runningPipWindows[id] && runningPipWindows[id].document) {
-                    // Re-initialize Lucide Icons in child windows
-                    if (runningPipWindows[id].lucide) {
-                        runningPipWindows[id].lucide.createIcons();
-                    }
-                }
+        // --- RENDER INTERFACE ELEMENTS ---
+        function renderSidebar() {
+            playlistMount.innerHTML = '';
+            playlists.forEach(p => {
+                const item = document.createElement('div');
+                item.classList.add('playlist-item');
+                if (p.id === activePlaylistId) item.classList.add('active');
+                
+                let deleteButtonHTML = p.id !== 'all' ? `<button class="remove-p-btn" onclick="event.stopPropagation(); adminDeletePlaylist('${p.id}')">✕</button>` : '';
+                item.innerHTML = `<span>📂 ${p.name}</span> ${deleteButtonHTML}`;
+                
+                item.addEventListener('click', () => switchPlaylist(p.id));
+                playlistMount.appendChild(item);
             });
         }
 
-        // FIXED DOCUMENT PICTURE-IN-PICTURE (SYNCED INTERACTIONS & STYLES)
-        async function popOutWidget(widgetId, title, width, height) {
-            if ('documentPictureInPicture' in window) {
-                try {
-                    const widgetElement = document.getElementById(widgetId);
-                    const pipWindow = await window.documentPictureInPicture.requestWindow({
-                        width: width,
-                        height: height,
-                    });
+        function renderTrackGrid() {
+            gridMount.innerHTML = '';
+            const list = getFilteredTracks();
 
-                    runningPipWindows[widgetId] = pipWindow;
+            list.forEach((track, index) => {
+                const globalIndex = masterTracks.indexOf(track);
+                const card = document.createElement('div');
+                card.classList.add('grid-card');
+                if (globalIndex === currentTrackIndex) card.classList.add('active');
 
-                    // FIXED COLOR/BACKGROUND: Explicitly add dark configuration classes to pop-out context
-                    pipWindow.document.documentElement.className = document.documentElement.className;
-                    pipWindow.document.body.className = "bg-slate-950 text-slate-100 p-4 flex flex-col justify-stretch items-stretch h-full overflow-hidden";
-                    pipWindow.document.title = title;
+                card.innerHTML = `
+                    <button class="remove-track-btn" onclick="event.stopPropagation(); adminDeleteTrack(${track.id})">🗑️</button>
+                    <div class="card-icon-frame">${track.icon || '🎵'}</div>
+                    <div class="card-title">${track.title}</div>
+                    <div style="font-size:11px; color:#9aa8bd; margin-top:4px;">${track.artist}</div>
+                `;
+                card.addEventListener('click', () => selectTrack(globalIndex, true));
+                gridMount.appendChild(card);
+            });
+        }
 
-                    // Copy tailwind configurations and styles properly
-                    Array.from(document.styleSheets).forEach((styleSheet) => {
-                        try {
-                            const newStyleEl = pipWindow.document.createElement('style');
-                            if (styleSheet.cssRules) {
-                                Array.from(styleSheet.cssRules).forEach((rule) => {
-                                    newStyleEl.appendChild(pipWindow.document.createTextNode(rule.cssText));
-                                });
-                                pipWindow.document.head.appendChild(newStyleEl);
-                            }
-                        } catch (e) {
-                            if (styleSheet.href) {
-                                const link = pipWindow.document.createElement('link');
-                                link.rel = 'stylesheet';
-                                link.href = styleSheet.href;
-                                pipWindow.document.head.appendChild(link);
-                            }
-                        }
-                    });
+        function switchPlaylist(id) {
+            activePlaylistId = id;
+            renderSidebar();
+            renderTrackGrid();
+        }
 
-                    // Move global icon libraries over to make functional icons work inside popout context
-                    const script = pipWindow.document.createElement('script');
-                    script.src = "https://unpkg.com/lucide@latest";
-                    script.onload = () => { pipWindow.lucide = pipWindow.window.lucide; pipWindow.lucide.createIcons(); };
-                    pipWindow.document.head.appendChild(script);
+        function selectTrack(index, autostart = false) {
+            if (masterTracks.length === 0) {
+                currentTitle.innerText = "No Tracks Loaded";
+                currentArtist.innerText = "";
+                heroArt.innerText = "🎵";
+                return;
+            }
+            currentTrackIndex = (index + masterTracks.length) % masterTracks.length;
+            const track = masterTracks[currentTrackIndex];
 
-                    // Placeholder setup inside core layout container
-                    const placeholder = document.createElement('div');
-                    placeholder.id = `${widgetId}-placeholder`;
-                    placeholder.className = "p-6 border border-dashed border-slate-800 text-center text-xs text-slate-500 rounded-2xl font-mono flex items-center justify-center min-h-[400px]";
-                    placeholder.innerText = `[ ${title.toUpperCase()} FLOATING ]`;
-                    
-                    widgetElement.parentNode.insertBefore(placeholder, widgetElement);
-                    pipWindow.document.body.appendChild(widgetElement);
+            audio.src = track.url;
+            currentTitle.innerText = track.title;
+            currentArtist.innerText = track.artist;
+            heroArt.innerText = track.icon || '🎵';
 
-                    // Hide original expand toggle icon when popped out
-                    const popBtn = widgetElement.querySelector('button[onclick^="popOutWidget"]');
-                    if (popBtn) popBtn.style.display = 'none';
+            renderTrackGrid();
 
-                    // Re-bind click event scopes directly back to main tab windows execution loop
-                    pipWindow.window.commitTodoRow = window.commitTodoRow;
-                    pipWindow.window.toggleTodoCheck = window.toggleTodoCheck;
-                    pipWindow.window.dropTodoItem = window.dropTodoItem;
-                    pipWindow.window.commitNoteRow = window.commitNoteRow;
-                    pipWindow.window.dropNoteItem = window.dropNoteItem;
-                    pipWindow.window.togglePomoState = window.togglePomoState;
-                    pipWindow.window.resetPomoState = window.resetPomoState;
-                    pipWindow.window.modifyPomoSpan = window.modifyPomoSpan;
-
-                    // Reattach element to master board when popped window closes
-                    pipWindow.addEventListener("pagehide", (event) => {
-                        delete runningPipWindows[widgetId];
-                        const originalPlaceholder = document.getElementById(`${widgetId}-placeholder`);
-                        if (originalPlaceholder) {
-                            originalPlaceholder.parentNode.insertBefore(widgetElement, originalPlaceholder);
-                            originalPlaceholder.remove();
-                        }
-                        if (popBtn) popBtn.style.display = '';
-                        lucide.createIcons();
-                    });
-
-                } catch (error) {
-                    alert("Pop-out block sequence registered.");
-                    console.error(error);
-                }
+            if (autostart) {
+                audio.play();
+                isPlaying = true;
+                playTrigger.innerText = "⏸";
             } else {
-                alert("Your browser does not support true desktop Document Picture-in-Picture window modifications.");
+                audio.pause();
+                isPlaying = false;
+                playTrigger.innerText = "▶";
             }
         }
 
-        // TO-DO PIPELINE METHODS
-        function commitTodoRow() {
-            // Read value dynamically across windows
-            const inputEl = document.querySelector('#todo-entry') || (runningPipWindows['widget-todo'] && runningPipWindows['widget-todo'].document.querySelector('#todo-entry'));
-            if(!inputEl || !inputEl.value.trim()) return;
-            appState.todos.push({ id: Date.now(), task: inputEl.value.trim(), checked: false });
-            inputEl.value = "";
-            saveWorkspaceState();
-        }
-
-        function toggleTodoCheck(id) {
-            const matchingItem = appState.todos.find(t => t.id === id);
-            if(matchingItem) { matchingItem.checked = !matchingItem.checked; saveWorkspaceState(); }
-        }
-
-        function dropTodoItem(id) {
-            appState.todos = appState.todos.filter(t => t.id !== id);
-            saveWorkspaceState();
-        }
-
-        function renderTodoComponent() {
-            const listElements = document.querySelectorAll('#todo-stack');
-            const openCount = appState.todos.filter(t => !t.checked).length;
-            
-            document.querySelectorAll('#todo-count').forEach(el => el.innerText = `${openCount} Open`);
-
-            listElements.forEach(list => {
-                list.innerHTML = appState.todos.map(t => `
-                    <div class="flex items-center justify-between p-2.5 bg-slate-900/60 rounded-xl border border-slate-800">
-                        <div class="flex items-center gap-2 truncate flex-1">
-                            <input type="checkbox" ${t.checked ? 'checked' : ''} onchange="window.toggleTodoCheck(${t.id})" class="rounded text-indigo-600 focus:ring-0 cursor-pointer h-3.5 w-3.5">
-                            <span class="text-xs font-mono truncate tracking-tight ${t.checked ? 'line-through text-slate-500' : ''}">${t.task}</span>
-                        </div>
-                        <button onclick="window.dropTodoItem(${t.id})" class="text-slate-500 hover:text-red-400 pl-1 transition-colors"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
-                    </div>
-                `).join('');
-            });
-            lucide.createIcons();
-        }
-
-        // NOTES ENGINE METHODS
-        function commitNoteRow() {
-            const textEl = document.querySelector('#note-entry') || (runningPipWindows['widget-notes'] && runningPipWindows['widget-notes'].document.querySelector('#note-entry'));
-            if(!textEl || !textEl.value.trim()) return;
-            appState.notes.unshift({ id: Date.now(), text: textEl.value.trim(), stamp: new Date().toLocaleTimeString() });
-            textEl.value = "";
-            saveWorkspaceState();
-        }
-
-        function dropNoteItem(id) {
-            appState.notes = appState.notes.filter(n => n.id !== id);
-            saveWorkspaceState();
-        }
-
-        function renderNoteComponent() {
-            const listElements = document.querySelectorAll('#note-stack');
-            
-            listElements.forEach(list => {
-                list.innerHTML = appState.notes.map(n => `
-                    <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 flex flex-col gap-1">
-                        <p class="text-xs leading-relaxed break-words whitespace-pre-wrap">${n.text}</p>
-                        <div class="flex items-center justify-between mt-1 pt-1 border-t border-slate-800/40">
-                            <span class="text-[9px] font-mono text-slate-500">${n.stamp}</span>
-                            <button onclick="window.dropNoteItem(${n.id})" class="text-slate-500 hover:text-red-400 transition-colors"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
-                        </div>
-                    </div>
-                `).join('');
-            });
-            lucide.createIcons();
-        }
-
-        // TIMER FUNCTIONS
-        function modifyPomoSpan() {
-            const targetMins = prompt("Specify focus session (minutes):", Math.floor(pomoSessionDuration / 60));
-            if(targetMins && !isNaN(targetMins) && targetMins > 0) {
-                pomoSessionDuration = Math.floor(targetMins) * 60;
-                resetPomoState();
-            }
-        }
-
-        function togglePomoState() {
-            const triggerButtons = document.querySelectorAll('#pomo-trigger-btn');
-            if(pomoTimerReference) {
-                clearInterval(pomoTimerReference);
-                pomoTimerReference = null;
-                triggerButtons.forEach(btn => btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> RESUME');
+        function togglePlayback() {
+            if (masterTracks.length === 0) return;
+            if (isPlaying) {
+                audio.pause();
+                playTrigger.innerText = "▶";
             } else {
-                pomoTimerReference = setInterval(() => {
-                    if(pomoRemainingSeconds <= 0) {
-                        clearInterval(pomoTimerReference);
-                        pomoTimerReference = null;
-                        triggerButtons.forEach(btn => btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> START');
-                        alert("Session complete!");
-                        pomoRemainingSeconds = pomoSessionDuration;
-                    } else { pomoRemainingSeconds--; }
-                    syncPomoDisplayDigits();
-                }, 1000);
-                triggerButtons.forEach(btn => btn.innerHTML = '<i data-lucide="pause" class="w-3.5 h-3.5"></i> PAUSE');
+                audio.play();
+                playTrigger.innerText = "⏸";
             }
-            syncRenderCanvas();
+            isPlaying = !isPlaying;
         }
 
-        function resetPomoState() {
-            if(pomoTimerReference) { clearInterval(pomoTimerReference); pomoTimerReference = null; }
-            pomoRemainingSeconds = pomoSessionDuration;
-            document.querySelectorAll('#pomo-trigger-btn').forEach(btn => btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> START');
-            syncPomoDisplayDigits();
-            syncRenderCanvas();
+        // --- PASSWORD CHECKS & ADMIN ARTIFACTS ---
+        function requestAdminAccess() {
+            const pass = prompt("ENTER SYSTEM CREATOR AUTHENTICATION PASSWORD:");
+            if (pass === "void") {
+                document.getElementById('admin-panel').style.display = 'flex';
+            } else {
+                alert("ACCESS FORBIDDEN.");
+            }
         }
 
-        function syncPomoDisplayDigits() {
-            const m = Math.floor(pomoRemainingSeconds / 60);
-            const s = pomoRemainingSeconds % 60;
-            const computedString = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-            
-            // Sync digit values into main dashboard and popouts simultaneously
-            const elements = document.querySelectorAll('#pomo-clock-digits');
-            elements.forEach(el => el.innerText = computedString);
+        // Catch the native operating system file select action
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFileBlobUrl = URL.createObjectURL(file);
+                selectedFileName = file.name.replace(/\.[^/.]+$/, ""); // strip extension
+                fileNamePreview.innerText = `Ready: ${file.name}`;
+            }
+        });
+
+        function adminAddTrack() {
+            if(selectedFileBlobUrl && selectedFileName) {
+                masterTracks.push({
+                    id: Date.now(),
+                    title: selectedFileName,
+                    artist: "Local Module",
+                    category: activePlaylistId,
+                    icon: "💾",
+                    url: selectedFileBlobUrl
+                });
+                renderTrackGrid();
+                
+                // Reset inputs and close window
+                document.getElementById('admin-panel').style.display = 'none';
+                fileInput.value = '';
+                fileNamePreview.innerText = '';
+                selectedFileBlobUrl = null;
+                selectedFileName = "";
+            } else {
+                alert("Please select a file first using the browse button.");
+            }
         }
 
-        function toggleAppTheme() {
-            appState.themeMode = appState.themeMode === 'dark' ? 'light' : 'dark';
-            applySyncThemeState();
-            localStorage.setItem('minimal_focus_vault', JSON.stringify(appState));
+        function adminAddPlaylist() {
+            const name = document.getElementById('new-playlist-name').value;
+            if(name) {
+                const newId = name.toLowerCase().replace(/\s+/g, '-');
+                playlists.push({ id: newId, name: name });
+                renderSidebar();
+                document.getElementById('admin-panel').style.display = 'none';
+                document.getElementById('new-playlist-name').value = '';
+                switchPlaylist(newId);
+            }
         }
 
-        function applySyncThemeState() {
-            if(appState.themeMode === 'dark') document.documentElement.classList.add('dark');
-            else document.documentElement.classList.remove('dark');
+        function adminDeletePlaylist(id) {
+            const pass = prompt("CONFIRM PLAYLIST DELETION PASSWORD:");
+            if(pass === "void") {
+                playlists = playlists.filter(p => p.id !== id);
+                masterTracks.forEach(t => { if(t.category === id) t.category = 'all'; });
+                if(activePlaylistId === id) activePlaylistId = 'all';
+                renderSidebar();
+                renderTrackGrid();
+            } else { alert("INVALID SYSTEM PASS."); }
         }
 
-        window.onload = () => { initializeWorkspace(); };
+        function adminDeleteTrack(trackId) {
+            const pass = prompt("CONFIRM AUDIO PURGE PASSWORD:");
+            if(pass === "void") {
+                masterTracks = masterTracks.filter(t => t.id !== trackId);
+                renderTrackGrid();
+                if(masterTracks.length === 0) {
+                    audio.pause();
+                    isPlaying = false;
+                    playTrigger.innerText = "▶";
+                    selectTrack(0, false);
+                } else {
+                    selectTrack(0, isPlaying);
+                }
+            } else { alert("INVALID SYSTEM PASS."); }
+        }
+
+        // --- TIMELINE CONTROLS ---
+        audio.addEventListener('timeupdate', () => {
+            const pct = (audio.currentTime / (audio.duration || 1)) * 100;
+            playbackProgress.style.width = `${pct}%`;
+        });
+
+        seekTimeline.addEventListener('click', (e) => {
+            if(audio.duration) {
+                audio.currentTime = (e.offsetX / seekTimeline.clientWidth) * audio.duration;
+            }
+        });
+
+        playTrigger.addEventListener('click', togglePlayback);
+        document.getElementById('next-btn').addEventListener('click', () => { if(masterTracks.length) selectTrack((currentTrackIndex + 1) % masterTracks.length, isPlaying); });
+        document.getElementById('prev-btn').addEventListener('click', () => { if(masterTracks.length) selectTrack((currentTrackIndex - 1 + masterTracks.length) % masterTracks.length, isPlaying); });
+        audio.addEventListener('ended', () => { document.getElementById('next-btn').click(); });
+
+        // --- CORE INITIATION ---
+        renderSidebar();
+        renderTrackGrid();
+        selectTrack(0, false);
     </script>
 </body>
 </html>
